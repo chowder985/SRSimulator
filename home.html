@@ -7,10 +7,17 @@
     <script src="js/stats.js"></script>
     <script src="js/FBXLoader.js"></script>
     <script src="js/MTLLoader.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
+    <script src="coding.js"></script>
     <style media="screen">
       body, html{
         margin: 0;
         padding: 0;
+        height: 100%;
       }
 
       canvas{
@@ -53,6 +60,40 @@
       span{
         font-family: sans-serif;
       }
+
+      #inputCode{
+        width: 100%;
+        font-size: 16px;
+        border-style: none;
+        outline: none;
+        background: transparent;
+      }
+      p{
+        margin: 0;
+        padding:0;
+        font-family: sans-serif;
+        -webkit-user-select: none;
+      }
+      .codingActivity{
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-image: url("img/computer.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        position: absolute;
+      }
+      .container{
+        padding-top: 6%;
+        padding-left: 7%;
+      }
+      .timer{
+        position: absolute;
+        top: 50%;
+        right: 43%;
+        width: 100px;
+      }
     </style>
   </head>
   <body>
@@ -79,6 +120,19 @@
       </div>
     </div>
 
+    <div class="codingActivity" style="display: none">
+      <div class="timer">
+        <p>3</p>
+      </div>
+      <div class="container">
+        <div class="textToType">
+
+        </div>
+
+        <input id="inputCode" type="text" autofocus>
+      </div>
+    </div>
+
     <script>
       const WIDTH = window.innerWidth;
       const HEIGHT = window.innerHeight;
@@ -89,15 +143,31 @@
       var mouse = new THREE.Vector2(0, 0);
       var clickedPos = new THREE.Vector3(0, 0, 0);
 
-      var renderer, scene, camera, light;
-      var plane, wall, object, player;
+      var notebookPos = new THREE.Vector3(50, 4, -50);
+      var playerPos = new THREE.Vector3(0, 4, 0);
+      var firstVisit = true;
+      var codingStarted = false;
+
+      var renderer, scene, camera, light, controls;
+      var plane, wall, notebook, player;
       var loadManager, mtlLoader, fbxLoader;
 
       var stats = initStats();
 
+      // coding Game Variables
+      var fakeData = [
+        "printf('Hello World!');",
+        "System.out.println('Hello World!');",
+        "for(var i=0; i<10; i++){"
+      ];
+      var countDown=2;
+      var elapse;
+      var i=0;
+      var numOfP=0;
+
       // var disX=null, disZ=null;
 
-      document.addEventListener('click', onMouseClick, false);
+      document.addEventListener('contextmenu', onMouseClick, false);
 
       function init(){
 
@@ -119,6 +189,13 @@
         camera.position.set(0, 55, 105);
         camera.rotation.x = -Math.PI/6;
         scene.add(camera);
+
+        // 카메라 조절
+        controls = new THREE.OrbitControls( camera );
+        controls.enableKeys = false;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.maxPolarAngle = Math.PI*0.5;
 
         // 바닥 구현
         var planeGeometry = new THREE.PlaneGeometry(100, 100);
@@ -148,89 +225,70 @@
         var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
         player = new THREE.Mesh(playerGeometry, playerMaterial);
         player.position.y=4;
-        player.position.x=-4;
-        player.position.z=4;
+        player.position.x=0;
+        player.position.z=0;
         player.castShadow = true;
         scene.add(player);
 
+        player.add(camera);
 
+        var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
+        var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
+        notebook = new THREE.Mesh(notebookGeo, notebookMat);
+        notebook.position.set(50, 4, -50);
+        notebook.castShadow = true;
+        scene.add(notebook);
 
         render();
       }
 
       function render(){
         stats.update();
-        camRaycaster.setFromCamera( mouse, camera );
-
-        var intersects = camRaycaster.intersectObjects(scene.children);
-
-        for ( var i = 0; i < intersects.length; i++ ) {
-          clickedPos.position = intersects[i].point;
-        }
         //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
-        // 스무드 이펙트
-        // player.position.x = clickedPos.position.x;
-        // player.position.z = clickedPos.position.z;
-
-        // if(disX===null){
-        //   disX = (player.position.x - clickedPos.position.x);
-        //   disX = Math.round(disX);
-        // }
-        // if(disZ===null){
-        //   disZ = (player.position.z - clickedPos.position.z);
-        //   disZ = Math.round(disZ);
-        // }
-        //
-        // var speed = 50;
-        // //disZ = Math.sqrt((player.position.z - clickedPos.position.z)*(player.position.z - clickedPos.position.z));
-        // if(Math.round(player.position.x) !== Math.round(clickedPos.position.x) /*&& player.position.z !== clickedPos.position.z*/){
-        //   if(disX >= 0 && player.position.x > clickedPos.position.x){
-        //     player.position.x -= (disX/speed);
-        //   } else if(disX >= 0 && player.position.x < clickedPos.position.x) {
-        //     player.position.x += (disX/speed);
-        //   } else if(disX < 0 && player.position.x > clickedPos.position.x){
-        //     player.position.x += (disX/speed);
-        //   } else {
-        //     player.position.x -= (disX/speed);
-        //   }
-        // }else{
-        //   disX = null;
-        // }
-        //
-        // if(Math.round(player.position.z) !== Math.round(clickedPos.position.z) /*&& player.position.z !== clickedPos.position.z*/){
-        //   if(disZ >= 0 && player.position.z > clickedPos.position.z){
-        //     player.position.z -= (disZ/speed);
-        //   } else if(disZ >= 0 && player.position.z < clickedPos.position.z) {
-        //     player.position.z += (disZ/speed);
-        //   } else if(disZ < 0 && player.position.z > clickedPos.position.z){
-        //     player.position.z += (disZ/speed);
-        //   } else {
-        //     player.position.z -= (disZ/speed);
-        //   }
-        // }else{
-        //   disZ = null;
-        // }
-
+        // 마우스 클릭한 좌표로 이동
         var disX, disZ;
-        disX = (clickedPos.position.x - player.position.x);
+        disX = (clickedPos.x - player.position.x);
 
-        disZ = (clickedPos.position.z - player.position.z);
+        disZ = (clickedPos.z - player.position.z);
 
         var speed = 0.5;
 
-        if(Math.floor(player.position.x) !== Math.floor(clickedPos.position.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.position.z)){
+        if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
           var angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
           player.position.x += Math.cos(angle * Math.PI/180)*speed;
           player.position.z += Math.sin(angle * Math.PI/180)*speed;
+          playerPos.copy(player.position);
         }
-        console.log(player.position)
+        //console.log(player.position)
+        // 노트북에 근접하면 게임 시작
+        if(playerPos.distanceTo(notebookPos) < 30 && firstVisit === true){
+          $(".codingActivity").css({"display": ""})
+          firstVisit = false;
+          codingStarted = true;
+
+          setTimeout(startGame, 3000);
+          document.getElementById("inputCode").disabled = true;
+          var count = setInterval(function(){
+            if(countDown<=0){
+              clearInterval(count);
+            }
+            $(".timer>p").text(countDown);
+            countDown--;
+          }, 1000);
+
+        }else if(playerPos.distanceTo(notebookPos) >= 30){
+          $(".codingActivity").css({"display": "none"})
+          firstVisit = true;
+          resetGame();
+        }
 
         requestAnimationFrame(render);
         renderer.render(scene, camera);
       }
 
+      // 알빠 아님
       function initStats() {
           var stats = new Stats();
 
@@ -246,10 +304,21 @@
           return stats;
       }
 
+      // 마우스 클릭 좌표 구함
       function onMouseClick(event){
-        event.preventDefault();
-        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        if(codingStarted === false){
+          event.preventDefault();
+          mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+          mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+          camRaycaster.setFromCamera( mouse, camera );
+
+          var intersects = camRaycaster.intersectObjects(scene.children);
+
+          for ( var i = 0; i < intersects.length; i++ ) {
+            clickedPos.copy(intersects[i].point);
+          }
+        }
       }
 
       window.onload = init;
