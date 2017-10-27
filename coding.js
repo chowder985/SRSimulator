@@ -17,35 +17,37 @@ function startGame(){
 
   $(".textToType").append("<p>"+fakeData[i]+"</p>");
 
-  document.addEventListener("keydown", function(e) {
-    if (e.keyCode == 13) {
-      var inputText = document.getElementById('inputCode').value;
-      // console.log(inputText);
-      // console.log(fakeData[i]);
-      document.getElementById('inputCode').value = "";
-
-      $(".textToType").append("<p num="+numOfP+">"+inputText+"</p>");
-      if(inputText !== fakeData[i]){
-        $("p[num="+numOfP+"]").css({"text-decoration": "line-through"});
-        i--;
-      }else{
-        $("p[num="+numOfP+"]").css({"text-decoration": "none"});
-      }
-      i++;
-      numOfP++;
-      if(i < fakeData.length){
-        $(".textToType").append("<p>"+fakeData[i]+"</p>");
-      }else{
-        //alert("Game Over! "+elapse+"초 기록!");
-        resetGame();
-        $(".codingActivity").css({"display": "none"})
-      }
-    }
-  }, false);
+  document.addEventListener("keydown", onEnter, false);
 
   document.addEventListener("click", function(){
     document.getElementById('inputCode').focus();
   })
+}
+
+function onEnter(e){
+  if (e.keyCode == 13) {
+    var inputText = document.getElementById('inputCode').value;
+    // console.log(inputText);
+    // console.log(fakeData[i]);
+    document.getElementById('inputCode').value = "";
+
+    $(".textToType").append("<p num="+numOfP+">"+inputText+"</p>");
+    if(inputText !== fakeData[i]){
+      $("p[num="+numOfP+"]").css({"text-decoration": "line-through"});
+      i--;
+    }else{
+      $("p[num="+numOfP+"]").css({"text-decoration": "none"});
+    }
+    i++;
+    numOfP++;
+    if(i < fakeData.length){
+      $(".textToType").append("<p>"+fakeData[i]+"</p>");
+    }else{
+      //alert("Game Over! "+elapse+"초 기록!");
+      resetGame();
+      $(".codingActivity").css({"display": "none"})
+    }
+  }
 }
 
 function resetGame(){

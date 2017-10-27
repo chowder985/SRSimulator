@@ -6,6 +6,7 @@
     <script src="js/three.min.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/FBXLoader.js"></script>
+    <script src="js/inflate.min.js"></script>
     <script src="js/MTLLoader.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script
@@ -150,7 +151,7 @@
 
       var renderer, scene, camera, light, controls;
       var plane, wall, notebook, player;
-      var loadManager, mtlLoader, fbxLoader;
+      var loadManager, mtlLoader, jsonLoader;
 
       var stats = initStats();
 
@@ -197,6 +198,9 @@
         controls.enablePan = false;
         controls.maxPolarAngle = Math.PI*0.5;
 
+        // 화면 반응형
+        window.addEventListener( 'resize', onWindowResize, false );
+
         // 바닥 구현
         var planeGeometry = new THREE.PlaneGeometry(100, 100);
         var planeMaterial = new THREE.MeshPhongMaterial({color: 0x2194ce, side: THREE.DoubleSide});
@@ -238,6 +242,29 @@
         notebook.position.set(50, 4, -50);
         notebook.castShadow = true;
         scene.add(notebook);
+
+        loadManager = new THREE.LoadingManager();
+  			loadManager.onProgress = function( item, loaded, total ) {
+  				console.log( item, loaded, total );
+  			};
+  			var onProgress = function( xhr ) {
+  				if ( xhr.lengthComputable ) {
+  					var percentComplete = xhr.loaded / xhr.total * 100;
+  					console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+  				}
+  			};
+  			var onError = function( xhr ) {
+  				console.error( xhr );
+  			};
+        jsonLoader = new THREE.JSONLoader(loadManager);
+        jsonLoader.load('models/Chair.js', function(geometry, materials){
+          var material = materials[0];
+          var object = new THREE.Mesh(geometry, material);
+          object.position.set(0, 0, 0);
+          object.scale.set(0.05, 0.05, 0.05);
+
+          scene.add(object);
+        }, onProgress, onError);
 
         render();
       }
@@ -320,6 +347,12 @@
           }
         }
       }
+
+      function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
 
       window.onload = init;
 
