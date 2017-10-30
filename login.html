@@ -105,17 +105,17 @@
     <!-- 로그인 -->
     <div class="login-page">
       <div class="form">
-        <form class="register-form">
-          <input type="text" placeholder="name"/>
-          <input type="password" placeholder="password"/>
-          <input type="text" placeholder="username"/>
+        <form class="register-form" method="POST" action="/auth/signup">
+          <input name="nick_name" type="text" placeholder="nick_name"/>
+          <input name="id" type="text" placeholder="username"/>
+          <input name="pw" type="password" placeholder="password"/>
           <button id="executeSignUp">create</button>
           <p class="message">계정이 이미 있나요? <a href="#">로그인</a></p>
         </form>
-        <form class="login-form">
-          <input id="idInput" type="text" name="id" placeholder="username">
-          <input id="passInput" type="password" name="password" placeholder="password">
-          <button type="button" name="button" id="executeSignIn">login</button>
+        <form class="login-form" method="get" action="/auth/signin">
+          <input id="idInput" name="id" type="text" placeholder="username">
+          <input id="passInput" name="pw" type="password" placeholder="password">
+          <button id="executeSignIn">login</button>
           <p class="message">계정이 없나요? <a href="#">계정 생성</a></p>
         </form>
       </div>
@@ -128,22 +128,51 @@
       });
 
       // 로그인 서버 통신
-      document.querySelector("#executeSignIn").addEventListener('click', function(){
-        var idData = document.getElementById("idInput").value;
-        var passData = document.getElementById("passInput").value;
+      document.querySelector("#executeSignUp").addEventListener('click', function(){
+        // var idData = document.getElementById("idInput").value;
+        // var passData = document.getElementById("passInput").value;
+        //
+        // var form = document.createElement("form");
+        // var email = document.createElement("input");
+        // var Name = document.createElement("input");
+        // var pw = document.createElement("input");
+        //
+        // form.setAttribute("method", "post");
+        // form.setAttribute("action", "/auth/reg");
+        //
+        // email.setAttribute("name", "email");
+        // email.setAttribute("value", $('#iemail').val());
+        //
+        // Name.setAttribute("name", "name");
+        // Name.setAttribute("value", $('#Name').val());
+        //
+        // pw.setAttribute("name", "pw");
+        // pw.setAttribute("value", $('#pw').val());
+        // form.appendChild(email);
+        // form.appendChild(Name);
+        // form.appendChild(pw);
+        // form.submit();
 
-        var ajaxReq = $.ajax({
-          method: "POST",
-          url: "https://www.iwin247.kr:8000/auth/signup",
-          data: {id: idData, password: passData}
-        })
-        ajaxReq.done(function(data){
-          console.log("Data recieved: "+data);
-        })
-        ajaxReq.fail(function(jqXHR, textStatus){
-          alert("Request failed: " + textStatus );
-        })
+        var regForm = document.querySelector(".register-form");
+        regForm.submit();
+
+        // var ajaxReq = $.ajax({
+        //   method: "POST",
+        //   url: "https://www.iwin247.kr:8000/auth/signup",
+        //   data: {id: idData, password: passData}
+        // })
+        // ajaxReq.done(function(data){
+        //   console.log("Data recieved: "+data);
+        // })
+        // ajaxReq.fail(function(jqXHR, textStatus){
+        //   alert("Request failed: " + textStatus );
+        // })
       });
+
+      document.querySelector("#executeSignIn").addEventListener("click", function(){
+        var logForm = document.querySelector(".login-form")
+        logForm.submit();
+      })
 
       var WIDTH = window.innerWidth;
       var HEIGHT = 400;
@@ -173,6 +202,9 @@
         camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 10000);
         camera.position.set(0, 0, 300);
         scene.add(camera);
+
+        // 반응형
+        window.addEventListener( 'resize', onWindowResize, false );
 
         // 텍스트 오브젝트 생성
         loader.load('fonts/helvetiker_regular.typeface.json', function(font){
@@ -227,6 +259,12 @@
 
           return stats;
       }
+
+      function onWindowResize() {
+				camera.aspect = window.innerWidth / HEIGHT;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, HEIGHT );
+			}
 
       function onDocumentMouseMove(event){
         mouseX = (event.clientX - (window.innerWidth / 2));

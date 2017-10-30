@@ -6,6 +6,7 @@
     <script src="js/three.min.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/FBXLoader.js"></script>
+    <script src="js/OBJLoader.js"></script>
     <script src="js/inflate.min.js"></script>
     <script src="js/MTLLoader.js"></script>
     <script src="js/OrbitControls.js"></script>
@@ -86,13 +87,15 @@
         position: absolute;
       }
       .container{
-        padding-top: 6%;
+        padding-top: 70px;
         padding-left: 7%;
       }
       .timer{
         position: absolute;
-        top: 50%;
-        right: 43%;
+        /*top: 50%;
+        right: 43%;*/
+        margin: 0 auto;
+        margin-top: 50%;
         width: 100px;
       }
     </style>
@@ -151,7 +154,7 @@
 
       var renderer, scene, camera, light, controls;
       var plane, wall, notebook, player;
-      var loadManager, mtlLoader, jsonLoader;
+      var loadManager, mtlLoader, objLoader;
 
       var stats = initStats();
 
@@ -256,15 +259,30 @@
   			var onError = function( xhr ) {
   				console.error( xhr );
   			};
-        jsonLoader = new THREE.JSONLoader(loadManager);
-        jsonLoader.load('models/Chair.js', function(geometry, materials){
-          var material = materials[0];
-          var object = new THREE.Mesh(geometry, material);
-          object.position.set(0, 0, 0);
-          object.scale.set(0.05, 0.05, 0.05);
 
-          scene.add(object);
-        }, onProgress, onError);
+        // jsonLoader = new THREE.JSONLoader(loadManager);
+        // jsonLoader.load('models/labtop.js', function(geometry, materials){
+        //   //var material = materials[0];
+        //   var object = new THREE.Mesh(geometry, materials);
+        //   //object.castShadow = true;
+        //
+        //   scene.add(object);
+        // }, onProgress, onError);
+
+        mtlLoader = new THREE.MTLLoader();
+        mtlLoader.setPath('/');
+        mtlLoader.load('models/chair.mtl', function(materials){
+          materials.preload();
+
+          objLoader = new THREE.OBJLoader();
+          objLoader.setMaterials(materials);
+          objLoader.setPath('/');
+          objLoader.load('models/chair.obj', function(object){
+            object.scale.set(0.05, 0.05, 0.05);
+            object.castShadow = true;
+            scene.add(object);
+          }, onProgress, onError);
+        });
 
         render();
       }
