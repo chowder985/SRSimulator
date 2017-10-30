@@ -7,15 +7,31 @@ var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
 var clickedPos = new THREE.Vector3(0, 0, 0);
 
-var renderer, scene, camera, light;
-var plane, wall, object, player;
-var loadManager, mtlLoader, fbxLoader;
+var notebookPos = new THREE.Vector3(50, 4, -50);
+var playerPos = new THREE.Vector3(0, 4, 0);
+var firstVisit = true;
+var codingStarted = false;
+
+var renderer, scene, camera, light, controls;
+var plane, wall, notebook, player;
+var loadManager, mtlLoader, objLoader;
 
 var stats = initStats();
 
+// coding Game Variables
+var fakeData = [
+  "printf('Hello World!');",
+  "System.out.println('Hello World!');",
+  "for(var i=0; i<10; i++){"
+];
+var countDown=2;
+var elapse;
+var i=0;
+var numOfP=0;
+
 // var disX=null, disZ=null;
 
-document.addEventListener('click', onMouseClick, false);
+document.addEventListener('contextmenu', onMouseClick, false);
 
 function init(){
 
@@ -24,7 +40,7 @@ function init(){
   renderer.setSize(WIDTH, HEIGHT);
   renderer.setClearColor(0xDDDDDD, 1);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
 
   renderer.autoClear = false;
@@ -37,6 +53,16 @@ function init(){
   camera.position.set(0, 55, 105);
   camera.rotation.x = -Math.PI/6;
   scene.add(camera);
+
+  // 카메라 조절
+  controls = new THREE.OrbitControls( camera );
+  controls.enableKeys = false;
+  controls.enableZoom = false;
+  controls.enablePan = false;
+  controls.maxPolarAngle = Math.PI*0.5;
+
+  // 화면 반응형
+  window.addEventListener( 'resize', onWindowResize, false );
 
   // 바닥 구현
   var planeGeometry = new THREE.PlaneGeometry(100, 100);
@@ -59,6 +85,8 @@ function init(){
   light.shadow.mapSize.width = 2048;
   light.shadow.mapSize.height = 2048;
 
+  light.shadow.camera.visible = true;
+
   scene.add(light);
 
   // 플레이어 구현
@@ -66,89 +94,112 @@ function init(){
   var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
   player = new THREE.Mesh(playerGeometry, playerMaterial);
   player.position.y=4;
-  player.position.x=-4;
-  player.position.z=4;
+  player.position.x=0;
+  player.position.z=0;
   player.castShadow = true;
   scene.add(player);
 
+  player.add(camera);
 
+  var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
+  var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
+  notebook = new THREE.Mesh(notebookGeo, notebookMat);
+  notebook.position.set(50, 4, -50);
+  notebook.castShadow = true;
+  scene.add(notebook);
+
+  loadManager = new THREE.LoadingManager();
+  loadManager.onProgress = function( item, loaded, total ) {
+    console.log( item, loaded, total );
+  };
+  var onProgress = function( xhr ) {
+    if ( xhr.lengthComputable ) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+    }
+  };
+  var onError = function( xhr ) {
+    console.error( xhr );
+  };
+
+  // jsonLoader = new THREE.JSONLoader(loadManager);
+  // jsonLoader.load('models/labtop.js', function(geometry, materials){
+  //   //var material = materials[0];
+  //   var object = new THREE.Mesh(geometry, materials);
+  //   //object.castShadow = true;
+  //
+  //   scene.add(object);
+  // }, onProgress, onError);
+
+  mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath("models/");
+  mtlLoader.load('chair.mtl', function(materials){
+    materials.preload();
+    objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath("models/");
+    objLoader.load('chair.obj', function(object){
+      object.scale.set(0.05, 0.05, 0.05);
+      object.castShadow = true;
+      object.traverse( function( node ) {
+        if ( node instanceof THREE.Mesh ) {
+          node.castShadow = true;
+        }
+      } );
+      scene.add(object);
+    }, onProgress, onError);
+  });
 
   render();
 }
 
 function render(){
   stats.update();
-  camRaycaster.setFromCamera( mouse, camera );
-
-  var intersects = camRaycaster.intersectObjects(scene.children);
-
-  for ( var i = 0; i < intersects.length; i++ ) {
-    clickedPos.position = intersects[i].point;
-  }
   //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
-  // 스무드 이펙트
-  // player.position.x = clickedPos.position.x;
-  // player.position.z = clickedPos.position.z;
-
-  // if(disX===null){
-  //   disX = (player.position.x - clickedPos.position.x);
-  //   disX = Math.round(disX);
-  // }
-  // if(disZ===null){
-  //   disZ = (player.position.z - clickedPos.position.z);
-  //   disZ = Math.round(disZ);
-  // }
-  //
-  // var speed = 50;
-  // //disZ = Math.sqrt((player.position.z - clickedPos.position.z)*(player.position.z - clickedPos.position.z));
-  // if(Math.round(player.position.x) !== Math.round(clickedPos.position.x) /*&& player.position.z !== clickedPos.position.z*/){
-  //   if(disX >= 0 && player.position.x > clickedPos.position.x){
-  //     player.position.x -= (disX/speed);
-  //   } else if(disX >= 0 && player.position.x < clickedPos.position.x) {
-  //     player.position.x += (disX/speed);
-  //   } else if(disX < 0 && player.position.x > clickedPos.position.x){
-  //     player.position.x += (disX/speed);
-  //   } else {
-  //     player.position.x -= (disX/speed);
-  //   }
-  // }else{
-  //   disX = null;
-  // }
-  //
-  // if(Math.round(player.position.z) !== Math.round(clickedPos.position.z) /*&& player.position.z !== clickedPos.position.z*/){
-  //   if(disZ >= 0 && player.position.z > clickedPos.position.z){
-  //     player.position.z -= (disZ/speed);
-  //   } else if(disZ >= 0 && player.position.z < clickedPos.position.z) {
-  //     player.position.z += (disZ/speed);
-  //   } else if(disZ < 0 && player.position.z > clickedPos.position.z){
-  //     player.position.z += (disZ/speed);
-  //   } else {
-  //     player.position.z -= (disZ/speed);
-  //   }
-  // }else{
-  //   disZ = null;
-  // }
-
+  // 마우스 클릭한 좌표로 이동
   var disX, disZ;
-  disX = (clickedPos.position.x - player.position.x);
+  disX = (clickedPos.x - player.position.x);
 
-  disZ = (clickedPos.position.z - player.position.z);
+  disZ = (clickedPos.z - player.position.z);
 
   var speed = 0.5;
 
-  if(Math.floor(player.position.x) !== Math.floor(clickedPos.position.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.position.z)){
+  if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
     var angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
     player.position.x += Math.cos(angle * Math.PI/180)*speed;
     player.position.z += Math.sin(angle * Math.PI/180)*speed;
+    playerPos.copy(player.position);
   }
-  console.log(player.position)
+  //console.log(player.position)
+  // 노트북에 근접하면 게임 시작
+  if(playerPos.distanceTo(notebookPos) < 30 && firstVisit === true){
+    $(".codingActivity").css({"display": ""})
+    firstVisit = false;
+    codingStarted = true;
+
+    setTimeout(startGame, 3000);
+    document.getElementById("inputCode").disabled = true;
+    var count = setInterval(function(){
+      if(countDown<=0){
+        clearInterval(count);
+      }
+      $(".timer>p").text(countDown);
+      countDown--;
+    }, 1000);
+
+  }else if(playerPos.distanceTo(notebookPos) >= 30){
+    $(".codingActivity").css({"display": "none"})
+    firstVisit = true;
+    resetGame();
+  }
 
   requestAnimationFrame(render);
   renderer.render(scene, camera);
 }
 
+// 알빠 아님
 function initStats() {
     var stats = new Stats();
 
@@ -164,10 +215,27 @@ function initStats() {
     return stats;
 }
 
+// 마우스 클릭 좌표 구함
 function onMouseClick(event){
-  event.preventDefault();
-  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  if(codingStarted === false){
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    camRaycaster.setFromCamera( mouse, camera );
+
+    var intersects = camRaycaster.intersectObjects(scene.children);
+
+    for ( var i = 0; i < intersects.length; i++ ) {
+      clickedPos.copy(intersects[i].point);
+    }
+  }
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 window.onload = init;
