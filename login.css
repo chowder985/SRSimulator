@@ -1,7 +1,18 @@
 .login-page{
+  position: relative;
+  bottom: -600px;
   width: 360px;
   padding: 0 0 0;
   margin: auto;
+  animation: upper;
+  animation-duration: 3s;
+  animation-delay: 1s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes upper {
+  0% {bottom: -600px;}
+  100% {bottom: 40px;}
 }
 
 .form {
@@ -77,4 +88,18 @@ canvas{
   height: 400;
   display: block;
   margin: 0 auto;
+}
+
+#WebGL-output{
+  position: relative;
+  top: -400px;
+  animation: landing;
+  animation-duration: 3s;
+  animation-delay: 1s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes landing {
+  0% {top: -400px;}
+  100% {top: 0px;}
 }
