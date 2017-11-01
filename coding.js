@@ -3,7 +3,7 @@ var startTimer;
 function startGame(){
   document.getElementById("inputCode").disabled = false;
   document.getElementById('inputCode').focus();
-  $(".timer").css({"top": "10%", "right": "2%"});
+  $(".timer").css({"top": "10%", "left": "auto", "right": "7%"});
   var start = new Date().getTime();
   elapse = 0.0;
 
@@ -58,6 +58,6 @@ function resetGame(){
   countDown = 2;
   $(".timer>p").text("3");
   $(".textToType > p").remove();
-  $(".timer").css({"top": "50%", "right": "43%"});
+  $(".timer").css({"top": "50%", "left": "50%"});
   clearInterval(startTimer)
 }

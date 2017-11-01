@@ -14,7 +14,7 @@ var codingStarted = false;
 
 var renderer, scene, camera, light, controls;
 var plane, wall, notebook, player;
-var loadManager, mtlLoader, objLoader;
+var loadManager;
 
 var stats = initStats();
 
@@ -65,7 +65,7 @@ function init(){
   window.addEventListener( 'resize', onWindowResize, false );
 
   // 바닥 구현
-  var planeGeometry = new THREE.PlaneGeometry(100, 100);
+  var planeGeometry = new THREE.PlaneGeometry(10000, 10000);
   var planeMaterial = new THREE.MeshPhongMaterial({color: 0x2194ce, side: THREE.DoubleSide});
   plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI/2;
@@ -75,18 +75,28 @@ function init(){
   scene.add(plane);
 
   // 빛 구현
-  light = new THREE.SpotLight(0xffffff);
-  light.position.set(0, 100, 200);
+  // light = new THREE.SpotLight(0xffffff);
+  // light.position.set(0, 100, 200);
+  // light.castShadow = true;
+  //
+  // light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 0.1, 10000 ) );
+  // light.shadow.bias = 0.0001;
+  //
+  // light.shadow.mapSize.width = 2048;
+  // light.shadow.mapSize.height = 2048;
+  //
+  // light.shadow.camera.visible = true;
+  //
+  // scene.add(light);
+
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  scene.add(ambientLight);
+
+  light = new THREE.PointLight(0xffffff, 0.7, 10000);
+  light.position.set(-50, 50, 70);
   light.castShadow = true;
-
-  light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 50, 1, 0.1, 10000 ) );
-  light.shadow.bias = 0.0001;
-
-  light.shadow.mapSize.width = 2048;
-  light.shadow.mapSize.height = 2048;
-
-  light.shadow.camera.visible = true;
-
+  light.shadow.camera.near = 0.1;
+  light.shadow.camera.far = 10000;
   scene.add(light);
 
   // 플레이어 구현
@@ -97,6 +107,7 @@ function init(){
   player.position.x=0;
   player.position.z=0;
   player.castShadow = true;
+  player.receiveShadow = true;
   scene.add(player);
 
   player.add(camera);
@@ -106,6 +117,7 @@ function init(){
   notebook = new THREE.Mesh(notebookGeo, notebookMat);
   notebook.position.set(50, 4, -50);
   notebook.castShadow = true;
+  notebook.receiveShadow = true;
   scene.add(notebook);
 
   loadManager = new THREE.LoadingManager();
@@ -131,21 +143,21 @@ function init(){
   //   scene.add(object);
   // }, onProgress, onError);
 
-  mtlLoader = new THREE.MTLLoader();
+  var mtlLoader = new THREE.MTLLoader();
   mtlLoader.setPath("models/");
-  mtlLoader.load('chair.mtl', function(materials){
+  mtlLoader.load("chair.mtl", function(materials){
     materials.preload();
-    objLoader = new THREE.OBJLoader();
+    var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
     objLoader.setPath("models/");
-    objLoader.load('chair.obj', function(object){
+    objLoader.load("chair.obj", function(object){
       object.scale.set(0.05, 0.05, 0.05);
-      object.castShadow = true;
-      object.traverse( function( node ) {
-        if ( node instanceof THREE.Mesh ) {
+      object.traverse(function(node){
+        if(node instanceof THREE.Mesh){
           node.castShadow = true;
+          node.receiveShadow = true;
         }
-      } );
+      });
       scene.add(object);
     }, onProgress, onError);
   });
