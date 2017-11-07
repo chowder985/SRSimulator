@@ -13,8 +13,15 @@ var firstVisit = true;
 var codingStarted = false;
 
 var renderer, scene, camera, light, controls;
-var plane, wall, notebook, player;
+var plane, wall, notebook, player, chair;
 var loadManager;
+
+var speed = 0.5;
+var disX, disZ;
+var angle;
+
+var collidableMeshList = [];
+// var collided = false;
 
 var stats = initStats();
 
@@ -93,7 +100,7 @@ function init(){
   scene.add(ambientLight);
 
   light = new THREE.PointLight(0xffffff, 0.7, 10000);
-  light.position.set(-50, 50, 70);
+  light.position.set(-50, 70, 70);
   light.castShadow = true;
   light.shadow.camera.near = 0.1;
   light.shadow.camera.far = 10000;
@@ -114,7 +121,8 @@ function init(){
 
   var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
   var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  notebook = new THREE.Mesh(notebookGeo, notebookMat);
+  notebook = new Physijs.BoxMesh(notebookGeo, notebookMat);
+  collidableMeshList.push(notebook);
   notebook.position.set(50, 4, -50);
   notebook.castShadow = true;
   notebook.receiveShadow = true;
@@ -152,15 +160,29 @@ function init(){
     objLoader.setPath("models/");
     objLoader.load("chair.obj", function(object){
       object.scale.set(0.05, 0.05, 0.05);
+      object.position.set(0, 0, -50);
       object.traverse(function(node){
         if(node instanceof THREE.Mesh){
           node.castShadow = true;
           node.receiveShadow = true;
+          //collidableMeshList.push(node);
         }
       });
       scene.add(object);
     }, onProgress, onError);
   });
+
+  var chairGeometry = new THREE.CylinderGeometry(12, 12, 20, 32);
+  var chairMaterial = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  chair = new THREE.Mesh(chairGeometry, chairMaterial);
+  collidableMeshList.push(chair);
+  chair.position.set(0, 0, -43);
+  scene.add(chair);
+
+  // 이동 처리
+  disX = (clickedPos.x - player.position.x);
+  disZ = (clickedPos.z - player.position.z);
+  angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
   render();
 }
@@ -169,24 +191,39 @@ function render(){
   stats.update();
   //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
-  // 마우스 클릭한 좌표로 이동
-  var disX, disZ;
-  disX = (clickedPos.x - player.position.x);
+  // 충돌 처리
+  for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
+  {
+      var localVertex = player.geometry.vertices[vertexIndex].clone();
+      var globalVertex = localVertex.applyMatrix4(player.matrix);
+      var directionVector = globalVertex.sub( player.position );
 
+      var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
+      var collisionResults = ray.intersectObjects( collidableMeshList );
+      if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
+      {
+          // a collision occurred... do something...
+          //clickedPos.set(player.position.x, player.position.y, player.position.z);
+          player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+          player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+          clickedPos.set(player.position.x, player.position.y, player.position.z);
+      }
+  }
+
+  // 마우스 클릭한 좌표로 이동
+  disX = (clickedPos.x - player.position.x);
   disZ = (clickedPos.z - player.position.z);
 
-  var speed = 0.5;
-
   if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
-    var angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
+    angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
     player.position.x += Math.cos(angle * Math.PI/180)*speed;
     player.position.z += Math.sin(angle * Math.PI/180)*speed;
     playerPos.copy(player.position);
   }
-  //console.log(player.position)
-  // 노트북에 근접하면 게임 시작
-  if(playerPos.distanceTo(notebookPos) < 30 && firstVisit === true){
+
+  //노트북에 근접하면 게임 시작
+  if(playerPos.distanceTo(notebookPos) < 20 && firstVisit === true){
     $(".codingActivity").css({"display": ""})
     firstVisit = false;
     codingStarted = true;
@@ -201,7 +238,7 @@ function render(){
       countDown--;
     }, 1000);
 
-  }else if(playerPos.distanceTo(notebookPos) >= 30){
+  }else if(playerPos.distanceTo(notebookPos) >= 20){
     $(".codingActivity").css({"display": "none"})
     firstVisit = true;
     resetGame();
