@@ -15,7 +15,7 @@ function startGame(){
     $(".timer>p").text(elapse+"초");
   }, 100);
 
-  $(".textToType").append("<p>"+fakeData[i]+"</p>");
+  $(".textToType").append("<p>"+selectedLang[i]+"</p>");
 
   document.addEventListener("keydown", onEnter, false);
 
@@ -32,7 +32,7 @@ function onEnter(e){
     document.getElementById('inputCode').value = "";
 
     $(".textToType").append("<p num="+numOfP+">"+inputText+"</p>");
-    if(inputText !== fakeData[i]){
+    if(inputText !== selectedLang[i]){
       $("p[num="+numOfP+"]").css({"text-decoration": "line-through"});
       i--;
     }else{
@@ -40,12 +40,13 @@ function onEnter(e){
     }
     i++;
     numOfP++;
-    if(i < fakeData.length){
-      $(".textToType").append("<p>"+fakeData[i]+"</p>");
+    if(i < selectedLang.length){
+      $(".textToType").append("<p>"+selectedLang[i]+"</p>");
     }else{
       //alert("Game Over! "+elapse+"초 기록!");
       resetGame();
       $(".codingActivity").css({"display": "none"})
+      window.reload();
     }
   }
 }
@@ -56,8 +57,9 @@ function resetGame(){
   i=0;
   numOfP = 0;
   countDown = 2;
+  selectedLang = null;
   $(".timer>p").text("3");
   $(".textToType > p").remove();
-  $(".timer").css({"top": "50%", "left": "50%"});
+  $(".timer").css({"top": "48%", "left": "50%"});
   clearInterval(startTimer)
 }

@@ -15,6 +15,7 @@
       src="https://code.jquery.com/jquery-3.2.1.min.js"
       integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
       crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
     <link rel="stylesheet" href="home.css">
   </head>
   <body>
@@ -29,24 +30,37 @@
     <div id="Player-stats">
       <div class="Health">
         <div class="gage">
-          <span>체력</span>
         </div>
       </div>
       <div class="Dating">
         <div class="gage">
-          <span>연애</span>
         </div>
       </div>
       <div class="Coding">
         <div class="gage">
-          <span>코딩</span>
         </div>
       </div>
+      <div class="Happiness">
+        <div class="gage">
+        </div>
+      </div>
+    </div>
+    <img id="gageBar" src="img/gageBar.png">
+
+    <div class="codingStart" style="display: none">
+      <button id="startGame" type="button" name="button">Start Game</button>
+    </div>
+
+    <div class="codingSelect" style="display: none">
+      <button class="codeLanguage" id="C" type="button" name="button">C</button>
+      <button class="codeLanguage" id="Java" type="button" name="button">Java</button>
+      <button class="codeLanguage" id="Javascript" type="button" name="button">Javascript</button>
+      <button class="codeLanguage" id="HTML" type="button" name="button">HTML</button>
     </div>
 
     <div class="codingActivity" style="display: none">
       <div class="timer">
-        <p>3</p>
+        <p id="time">3</p>
       </div>
       <div class="container">
         <div class="textToType">

@@ -66,14 +66,6 @@ document.addEventListener('mousemove', onDocumentMouseMove, false);
 init();
 
 function init() {
-
-  // container = document.createElement('div');
-  // container.id = "container";
-  // document.body.appendChild(container);
-
-  // touchDevice = ('ontouchstart' in document.getElementById("container")) || (navigator.userAgent.match(/ipad|iphone|android/i) != null);
-  // if (touchDevice) sizeRatio = 2;
-
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 700 );
@@ -88,12 +80,10 @@ function init() {
 
   window.addEventListener( 'resize', onWindowResize, false );
 
-  // Floor
+  // 바닥
   var floorTexture = new THREE.TextureLoader().load("img/floor.jpg");
   var floorGeometry = new THREE.PlaneGeometry(400,1000);
   var floorMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, map: floorTexture } );
-  // floorMaterial.map.repeat.x = 12;
-  // floorMaterial.map.repeat.y = 4;
   floorMaterial.map.offset.set(0, 0);
   floorMaterial.map.repeat.set(4, 12);
   floorMaterial.map.wrapS = THREE.RepeatWrapping;
@@ -110,19 +100,7 @@ function init() {
   scene.add(floor);
   console.log("Made the floor");
 
-  // Cover
-  // var coverPlane = new THREE.PlaneGeometry(400,1000);
-  // var material = new THREE.MeshBasicMaterial( { color: 0xffffff, map:THREE.ImageUtils.loadTexture( "circle.png"), transparent: true } );
-  // var coverMesh = new THREE.Mesh( coverPlane, material );
-
-  // coverMesh.position.y = 1;
-  // coverMesh.renderDepth = 1;
-  // coverMesh.depthTest = false;
-  // coverMesh.matrixAutoUpdate = false;
-  // coverMesh.updateMatrix();
-  // scene.add(coverMesh);
-
-  // Hit
+  // 라켓이 움직일 바닥
   var hitPlane = new THREE.PlaneGeometry(100,100);
   hitMesh = new THREE.Mesh(hitPlane, new THREE.MeshBasicMaterial({color: 0xfff, transparent: true, opacity: 0.0})); //, transparent: true, opacity: 0.0
   hitMesh.rotation.x = -Math.PI/2-0.5;
@@ -131,17 +109,16 @@ function init() {
   hitMesh.visible = true;
   scene.add(hitMesh);
 
-  // Paddle
+  // 플레이어 라켓
   paddle = new THREE.Object3D();
-  //paddle.position.set(16,42,bound.top-15);
   scene.add(paddle);
 
-  // PaddleAI
+  // 로봇 라켓
   paddleAI = new THREE.Object3D();
   paddleAI.position.set(16,42,bound.top+15);
   scene.add(paddleAI);
 
-  // Ball
+  // 탁구공
   var ballGeomertry = new THREE.SphereGeometry(ballRadius,24,16);
   var material = new THREE.MeshLambertMaterial( { color: 0x666666, map: new THREE.TextureLoader().load( "img/ball2.jpg") } );
   ball = new THREE.Mesh( ballGeomertry, material );
@@ -152,7 +129,7 @@ function init() {
   ball.receiveShadow = false;
   scene.add(ball);
 
-  // Shadow
+  // 그림자
   var shadowPlane = new THREE.PlaneGeometry(2.2,2.2);
   shadowMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: new THREE.TextureLoader().load( "img/shadow.png"), transparent: true } );
   shadow = new THREE.Mesh( shadowPlane, shadowMaterial );
@@ -160,7 +137,7 @@ function init() {
   shadow.position.set(0,bound.table-ballRadius+0.05,0);
   scene.add(shadow);
 
-  // Lights
+  // 빛
   var ambient = new THREE.AmbientLight( 0xffffff );
   scene.add( ambient );
 
@@ -179,16 +156,13 @@ function init() {
   light.shadow.camera.far = 200;
   light.shadow.camera.fov = 60;
 
-  //light.shadowCameraVisible = true;
-
   light.shadow.darkness = 0.85;
 
   light.shadow.mapSize.width = 1024;
   light.shadow.mapSize.height = 1024;
-  console.log("빛 생성");
   scene.add( light );
 
-  // Models
+  // 모델 임포트
   var loadManager = new THREE.LoadingManager();
   loadManager.onProgress = function( item, loaded, total ) {
     console.log( item, loaded, total );
@@ -206,7 +180,6 @@ function init() {
   var loader = new THREE.FBXLoader(loadManager);
   loader.load( "models/pingpongracket.fbx", function(object){
     console.log("Loaded racketAI");
-    // AI
     paddleChildAI = object;
     paddleChildAI.rotation.y = -Math.PI/2;
     paddleChildAI.scale.set(0.4,0.4,0.4);
@@ -233,54 +206,9 @@ function init() {
     var net = new THREE.Mesh(netPlane, material);
     net.position.y = 36.3;
     net.rotation.x = -Math.PI;
-    //net.renderDepth = 0;
     net.matrixAutoUpdate = false;
     net.updateMatrix();
     scene.add(net);
-
-    var frontPlane = new THREE.PlaneGeometry(9,2.5);
-    var material = new THREE.MeshPhongMaterial( {color: 0x000000, map: new THREE.TextureLoader().load( "img/stiga.png"), specular: 0x545454} );
-    var frontLeft = new THREE.Mesh(frontPlane, material);
-    frontLeft.position.set(25,31.6,-56.4);
-    frontLeft.rotation.x = -Math.PI/2;
-    frontLeft.rotation.y = Math.PI;
-    frontLeft.matrixAutoUpdate = false;
-    frontLeft.updateMatrix();
-    scene.add(frontLeft);
-
-    var frontRight = new THREE.Mesh(frontPlane, material);
-    frontRight.position.set(-25,31.6,-56.4);
-    frontRight.rotation.x = -Math.PI/2;
-    frontRight.rotation.y = Math.PI;
-    frontRight.matrixAutoUpdate = false;
-    frontRight.updateMatrix();
-    scene.add(frontRight);
-
-    var netRight = new THREE.Mesh(frontPlane, material);
-    netRight.position.set(-33.5,32.8,-0.9);
-    netRight.rotation.x = -Math.PI/2;
-    netRight.rotation.y = Math.PI;
-    netRight.scale.set(0.25,0.25,0.25);
-    netRight.matrixAutoUpdate = false;
-    netRight.updateMatrix();
-    scene.add(netRight);
-
-    var netLeft = new THREE.Mesh(frontPlane, material);
-    netLeft.position.set(33.5,32.8,-0.9);
-    netLeft.rotation.x = -Math.PI/2;
-    netLeft.rotation.y = Math.PI;
-    netLeft.scale.set(0.25,0.25,0.25);
-    netLeft.matrixAutoUpdate = false;
-    netLeft.updateMatrix();
-    scene.add(netLeft);
-
-    var m = new THREE.MeshPhongMaterial( { color: 0xffffff, map: new THREE.TextureLoader().load( "img/surface0.jpg"), specular: 0x545454 } );
-    m.map.repeat.x = 0.1;
-    m.map.repeat.y = 0.035;
-    m.map.wrapS = THREE.RepeatWrapping;
-    m.map.wrapT = THREE.RepeatWrapping;
-    object.materials = m;
-    console.log(object);
 
     var table = object;
     table.scale.set(0.4,0.4,0.4);
@@ -295,8 +223,6 @@ function init() {
       }
     });
     scene.add(table);
-
-    //respawnBall();
   }, onProgress, onError);
 
   webGLRenderer = new THREE.WebGLRenderer( { scene: scene, clearColor: 0xDDDDDD, clearAlpha: 1.0, antialias: true } );
@@ -308,11 +234,6 @@ function init() {
 
   document.body.appendChild(webGLRenderer.domElement);
 
-  //webGLRenderer.autoClear = false;
-  // if (sizeRatio > 1) {
-  // 	webGLRenderer.domElement.style.webkitTransform = "scale3d("+sizeRatio+", "+sizeRatio+", 1)";
-  // 	webGLRenderer.domElement.style.webkitTransformOrigin = "0 0 0";
-  // }
   respawnBall();
   animate();
 }
@@ -330,6 +251,7 @@ function respawnBall() {
   inactiveCounter = 0;
 }
 
+// 마우스의 위치 받아오기
 function onDocumentMouseMove(event) {
   var windowHalfX = window.innerWidth >> 1;
   var windowHalfY = window.innerHeight >> 1;
@@ -343,32 +265,13 @@ function onDocumentMouseMove(event) {
   mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-  // cursor
+  // 마우스 커서 없애기
   if (mouseYpercent <= -0.75 && document.querySelector("canvas").style.cursor != "default") {
     document.querySelector("canvas").style.cursor = "default";
   } else if (mouseYpercent > -0.75 && document.querySelector("canvas").style.cursor != "none") {
     document.querySelector("canvas").style.cursor = "none";
   }
 }
-
-// function onTouchMove(event) {
-//
-// 	event.preventDefault();
-//
-// 	var windowHalfX = window.innerWidth >> 1;
-// 	var windowHalfY = window.innerHeight >> 1;
-//
-// 	mouseX = ( event.touches[0].clientX - windowHalfX );
-// 	mouseY = ( event.touches[0].clientY - windowHalfY );
-//
-// 	mouseXpercent = mouseX/(window.innerWidth/2);
-// 	mouseYpercent = mouseY/(window.innerHeight/2);
-//
-// 	rayX = ( event.touches[0].clientX / window.innerWidth ) * 2 - 1;
-// 	rayY = - ( event.touches[0].clientY / window.innerHeight ) * 2 + 1;
-//
-// }
-
 
 function animate() {
   loop();
@@ -381,8 +284,8 @@ function loop() {
   oldTime = time;
 
   if (isNaN(delta) || delta > 1000 || delta == 0 ) {
-    delta = 1000/60;
-  }
+		delta = 1000/60;
+	}
 
   if (ballInactive) {
     ++inactiveCounter;
@@ -410,7 +313,7 @@ function loop() {
     }
   }
 
-  // hit ball
+  // 공과 라켓의 충돌
   var normal = new THREE.Vector3();
 
   normal.subVectors( ball.position, paddle.position );
@@ -460,7 +363,6 @@ function loop() {
     hitY = mouseY;
 
     initHit = time;
-
   }
 
 
@@ -469,7 +371,7 @@ function loop() {
   raycaster.setFromCamera(mouse, camera);
 
   var intersect = raycaster.intersectObject( hitMesh );
-  console.log(intersect);
+  //console.log(intersect);
 
   if ( intersect.length > 0 && !hitting) {
       paddleTarget = intersect[0].point;

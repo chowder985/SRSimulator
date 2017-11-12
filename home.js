@@ -16,6 +16,8 @@ var renderer, scene, camera, light, controls;
 var plane, wall, notebook, player, chair;
 var loadManager;
 
+var fullPlayer = new THREE.Object3D();
+
 var speed = 0.5;
 var disX, disZ;
 var angle;
@@ -30,13 +32,27 @@ var collidableMeshList = [];
 var stats = initStats();
 
 // coding Game Variables
-var fakeData = [
+var c = [
   "printf('Hello World!');",
-  "System.out.println('Hello World!');",
+  "scanf('%d', &num);",
+  "for(i=1; i<=rows; ++i){",
+  "for(j=1; j<=i; ++j){",
+  "printf('*');}",
+  "printf(\"\\n\");"
+];
+var java = [
+  "System.out.println('Hello World!');"
+];
+var javascript = [
   "for(var i=0; i<10; i++){"
 ];
+var html = [
+  "<h1></h1>"
+];
+var selectedLang;
+
 var countDown=2;
-var elapse;
+var elapse=0.0;
 var i=0;
 var numOfP=0;
 
@@ -73,6 +89,7 @@ function init(){
 
   // 씬 구현
   scene = new THREE.Scene();
+  scene.add(fullPlayer);
 
   // 카메라 구현
   camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 10000);
@@ -136,7 +153,8 @@ function init(){
   player.receiveShadow = true;
   scene.add(player);
 
-  player.add(camera);
+  fullPlayer.add(player);
+  fullPlayer.add(camera);
 
   var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
   var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
@@ -264,8 +282,8 @@ function init(){
   scene.add(chair);
 
   // 이동 처리
-  disX = (clickedPos.x - player.position.x);
-  disZ = (clickedPos.z - player.position.z);
+  disX = (clickedPos.x - fullPlayer.position.x);
+  disZ = (clickedPos.z - fullPlayer.position.z);
   angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
   render();
@@ -275,52 +293,74 @@ function render(){
   stats.update();
   //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
+  var lookVector = new THREE.Vector3();
+  lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
+  player.lookAt(lookVector);
+
   // 충돌 처리
   for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
   {
       var localVertex = player.geometry.vertices[vertexIndex].clone();
-      var globalVertex = localVertex.applyMatrix4(player.matrix);
-      var directionVector = globalVertex.sub( player.position );
+      var globalVertex = localVertex.applyMatrix4(fullPlayer.matrix);
+      var directionVector = globalVertex.sub( fullPlayer.position );
 
-      var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
+      var ray = new THREE.Raycaster( fullPlayer.position, directionVector.clone().normalize() );
       var collisionResults = ray.intersectObjects( collidableMeshList );
       if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
       {
           // a collision occurred... do something...
           //clickedPos.set(player.position.x, player.position.y, player.position.z);
-          player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-          player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
-          clickedPos.set(player.position.x, player.position.y, player.position.z);
+          fullPlayer.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+          fullPlayer.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+          clickedPos.set(fullPlayer.position.x, fullPlayer.position.y, fullPlayer.position.z);
       }
   }
 
   // 마우스 클릭한 좌표로 이동
-  disX = (clickedPos.x - player.position.x);
-  disZ = (clickedPos.z - player.position.z);
+  disX = (clickedPos.x - fullPlayer.position.x);
+  disZ = (clickedPos.z - fullPlayer.position.z);
 
-  if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
+  if(Math.floor(fullPlayer.position.x) !== Math.floor(clickedPos.x) || Math.floor(fullPlayer.position.z) !== Math.floor(clickedPos.z)){
     angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
-    player.position.x += Math.cos(angle * Math.PI/180)*speed;
-    player.position.z += Math.sin(angle * Math.PI/180)*speed;
-    playerPos.copy(player.position);
+    fullPlayer.position.x += Math.cos(angle * Math.PI/180)*speed;
+    fullPlayer.position.z += Math.sin(angle * Math.PI/180)*speed;
+    playerPos.copy(fullPlayer.position);
   }
 
   //노트북에 근접하면 게임 시작
   if(playerPos.distanceTo(notebookPos) < 20 && firstVisit === true){
-    $(".codingActivity").css({"display": ""})
+    $(".codingStart").css({"display": ""})
     firstVisit = false;
     codingStarted = true;
 
-    setTimeout(startGame, 3000);
-    document.getElementById("inputCode").disabled = true;
-    var count = setInterval(function(){
-      if(countDown<=0){
-        clearInterval(count);
-      }
-      $(".timer>p").text(countDown);
-      countDown--;
-    }, 1000);
+    $("#startGame").click(function(){
+      $(".codingStart").css({"display": "none"})
+      $(".codingSelect").css({"display": ""})
 
+      $("#C").click(function(){
+        c = shuffle(c);
+        selectedLang = c;
+        loadGame();
+      })
+
+      $("#Java").click(function(){
+        java = shuffle(java);
+        selectedLang = java;
+        loadGame();
+      })
+
+      $("#Javascript").click(function(){
+        javascript = shuffle(javascript);
+        selectedLang = javascript;
+        loadGame();
+      })
+
+      $("#HTML").click(function(){
+        html = shuffle(html);
+        selectedLang = html;
+        loadGame();
+      })
+    })
   }else if(playerPos.distanceTo(notebookPos) >= 20){
     $(".codingActivity").css({"display": "none"})
     firstVisit = true;
@@ -329,6 +369,39 @@ function render(){
 
   requestAnimationFrame(render);
   renderer.render(scene, camera);
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+function loadGame(){
+  $(".codingSelect").css({"display": "none"})
+  $(".codingActivity").css({"display": ""})
+  setTimeout(startGame, 3000);
+  document.getElementById("inputCode").disabled = true;
+  var count = setInterval(function(){
+    if(countDown<=0){
+      clearInterval(count);
+    }
+    $(".timer>p").text(countDown);
+    countDown--;
+  }, 1000);
 }
 
 // 알빠 아님
