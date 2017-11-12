@@ -9,3 +9,17 @@ canvas {
   display: block;
   z-index: 100;
 }
+
+#scoreboard{
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  width: 110px;
+  background: #000;
+  color: #fff;
+  font-size: 50px;
+}
