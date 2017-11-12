@@ -20,6 +20,10 @@ var speed = 0.5;
 var disX, disZ;
 var angle;
 
+var date=1;
+var hours=0;
+var startTime;
+
 var collidableMeshList = [];
 // var collided = false;
 
@@ -41,11 +45,26 @@ var numOfP=0;
 document.addEventListener('contextmenu', onMouseClick, false);
 
 function init(){
+  // 시간 개념
+  document.querySelector("#dateText").textContent="Day "+date;
+  console.log(document.querySelector("#dateText").textContent);
+  startTime = setInterval(function(){
+    hours++;
+    console.log(hours);
+    if(hours === 12){
+      date++;
+      hours=0;
+      if(date%3===0){
+        window.location.href = "episode"+date/3+".html";
+      }
+      document.querySelector("#dateText").textContent="Day "+date;
+    }
+  }, 60000);
 
   // 렌더러 구현
   renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
   renderer.setSize(WIDTH, HEIGHT);
-  renderer.setClearColor(0xDDDDDD, 1);
+  renderer.setClearColor(0x00ffff, 1);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
@@ -57,7 +76,7 @@ function init(){
 
   // 카메라 구현
   camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 10000);
-  camera.position.set(0, 55, 105);
+  camera.position.set(0, 75, 125);
   camera.rotation.x = -Math.PI/6;
   scene.add(camera);
 
@@ -107,7 +126,7 @@ function init(){
   scene.add(light);
 
   // 플레이어 구현
-  var playerGeometry = new THREE.SphereGeometry(5, 32, 32);
+  var playerGeometry = new THREE.BoxGeometry(10, 10, 10);
   var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
   player = new THREE.Mesh(playerGeometry, playerMaterial);
   player.position.y=4;
@@ -121,7 +140,7 @@ function init(){
 
   var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
   var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  notebook = new Physijs.BoxMesh(notebookGeo, notebookMat);
+  notebook = new THREE.Mesh(notebookGeo, notebookMat);
   collidableMeshList.push(notebook);
   notebook.position.set(50, 4, -50);
   notebook.castShadow = true;
@@ -172,6 +191,71 @@ function init(){
     }, onProgress, onError);
   });
 
+  var fbxLoader = new THREE.FBXLoader(loadManager);
+  fbxLoader.load("models/bed.fbx", function(object){
+    object.position.set(40, 11, 0);
+    //var bedMesh = new THREE.Mesh(object, new THREE.MeshPhongMaterial({color: 0x00ffff}));
+    //console.log(object);
+    object.traverse( function(child){
+      if(child instanceof THREE.Mesh){
+        //child.material.color.setRGB(1, 0, 0);
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    scene.add(object);
+  });
+
+  fbxLoader.load("models/chair.fbx", function(object){
+    //console.log(object);
+    object.scale.set(0.05, 0.05, 0.05);
+    object.position.set(-50, 0, 0);
+    scene.add(object);
+  });
+
+  // fbxLoader.load('models/bookshelf.fbx', function(object){
+  //   scene.add(object);
+  // });
+
+  fbxLoader.load('models/desk.fbx', function(object){
+    object.scale.set(0.02, 0.02, 0.02);
+    object.position.set(-100, 12, 200);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/hanger.fbx', function(object){
+    object.scale.set(0.5, 0.5, 0.5);
+    object.position.set(0, -5, 50);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/laptop.fbx', function(object){
+    object.position.set(-40, 0, -50);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/room.fbx', function(object){
+    object.position.set(0, -5, 0);
+    object.scale.set(0.8, 0.8, 0.8);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/table.fbx', function(object){
+    object.position.set(0, 15, 200);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/tv.fbx', function(object){
+    object.position.set(50, 0, 200);
+    scene.add(object);
+  });
+
+  fbxLoader.load('models/tvstand.fbx', function(object){
+    console.log(object);
+    object.position.set(-100, -27, 300);
+    scene.add(object);
+  });
+
   var chairGeometry = new THREE.CylinderGeometry(12, 12, 20, 32);
   var chairMaterial = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
   chair = new THREE.Mesh(chairGeometry, chairMaterial);
@@ -216,7 +300,6 @@ function render(){
 
   if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
     angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
-
     player.position.x += Math.cos(angle * Math.PI/180)*speed;
     player.position.z += Math.sin(angle * Math.PI/180)*speed;
     playerPos.copy(player.position);
