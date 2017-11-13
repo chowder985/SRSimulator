@@ -1,5 +1,6 @@
 // 코딩 시작
 var startTimer;
+document.addEventListener("keydown", onEnter, false);
 function startGame(){
   document.getElementById("inputCode").disabled = false;
   document.getElementById('inputCode').focus();
@@ -16,8 +17,6 @@ function startGame(){
   }, 100);
 
   $(".textToType").append("<p>"+selectedLang[i]+"</p>");
-
-  document.addEventListener("keydown", onEnter, false);
 
   document.addEventListener("click", function(){
     document.getElementById('inputCode').focus();
@@ -46,7 +45,6 @@ function onEnter(e){
       //alert("Game Over! "+elapse+"초 기록!");
       resetGame();
       $(".codingActivity").css({"display": "none"})
-      window.reload();
     }
   }
 }

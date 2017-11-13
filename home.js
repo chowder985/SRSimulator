@@ -2,12 +2,14 @@ const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
 var clock = new THREE.Clock();
 var mixers = [];
+var action;
+var actionStop = false;
 
 var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
 var clickedPos = new THREE.Vector3(0, 0, 0);
 
-var notebookPos = new THREE.Vector3(50, 4, -50);
+//var notebookPos = new THREE.Vector3(50, 4, -50);
 var playerPos = new THREE.Vector3(0, 4, 0);
 var firstVisit = true;
 var codingStarted = false;
@@ -101,7 +103,7 @@ function init(){
   // 카메라 조절
   controls = new THREE.OrbitControls( camera );
   controls.enableKeys = false;
-  controls.enableZoom = false;
+  //controls.enableZoom = false;
   controls.enablePan = false;
   controls.maxPolarAngle = Math.PI*0.5;
 
@@ -128,7 +130,7 @@ function init(){
   var planeMaterial = new THREE.MeshPhongMaterial({color: 0x2194ce, side: THREE.DoubleSide});
   plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI/2;
-  plane.position.set(0, -1, 0);
+  plane.position.set(0, -5, 0);
   plane.receiveShadow = true;
   //camera.lookAt(plane.position);
   scene.add(plane);
@@ -148,11 +150,11 @@ function init(){
   //
   // scene.add(light);
 
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
   scene.add(ambientLight);
 
-  light = new THREE.PointLight(0xffffff, 0.7, 10000);
-  light.position.set(-50, 70, 70);
+  light = new THREE.PointLight(0xffffff, 0.3, 10000);
+  light.position.set(0, 70, 200);
   light.castShadow = true;
   light.shadow.camera.near = 0.1;
   light.shadow.camera.far = 10000;
@@ -160,65 +162,53 @@ function init(){
 
   // 플레이어 구현
   fbxLoader.load("models/IllHoon.FBX", function(object){
-    console.log(object);
-    object.scale.set(0.15, 0.15, 0.15);
-    object.mixer = new THREE.AnimationMixer(object);
-    mixers.push(object.mixer);
-    var action = object.mixer.clipAction(object.animations[0]);
+    //console.log(object);
+    player = object;
+    player.scale.set(0.15, 0.15, 0.15);
+    player.position.y +=5;
+    player.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    player.mixer = new THREE.AnimationMixer(player);
+    mixers.push(player.mixer);
+    action = player.mixer.clipAction(player.animations[0]);
 
-    setInterval(function(){
-      action.reset();
-    },1000)
+    action.time = 1;
+    action.setDuration(3.3);
+    action.repetitions = 0;
     action.play();
 
-    scene.add(object);
+    scene.add(player);
   });
 
-  var playerGeometry = new THREE.BoxGeometry(10, 10, 10);
-  var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  player = new THREE.Mesh(playerGeometry, playerMaterial);
-  player.position.y=4;
-  player.position.x=0;
-  player.position.z=0;
-  player.castShadow = true;
-  player.receiveShadow = true;
-  scene.add(player);
+  // var playerGeometry = new THREE.BoxGeometry(10, 10, 10);
+  // var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
+  // player = new THREE.Mesh(playerGeometry, playerMaterial);
+  // player.position.y=4;
+  // player.position.x=0;
+  // player.position.z=0;
+  // player.castShadow = true;
+  // player.receiveShadow = true;
+  // scene.add(player);
 
   // fullPlayer.add(player);
   fullPlayer.add(camera);
 
-  var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
-  var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  notebook = new THREE.Mesh(notebookGeo, notebookMat);
-  collidableMeshList.push(notebook);
-  notebook.position.set(50, 4, -50);
-  notebook.castShadow = true;
-  notebook.receiveShadow = true;
-  scene.add(notebook);
-
-  var mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath("models/");
-  mtlLoader.load("chair.mtl", function(materials){
-    materials.preload();
-    var objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials);
-    objLoader.setPath("models/");
-    objLoader.load("chair.obj", function(object){
-      object.scale.set(0.05, 0.05, 0.05);
-      object.position.set(0, 0, -50);
-      object.traverse(function(node){
-        if(node instanceof THREE.Mesh){
-          node.castShadow = true;
-          node.receiveShadow = true;
-          //collidableMeshList.push(node);
-        }
-      });
-      scene.add(object);
-    }, onProgress, onError);
-  });
+  // var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
+  // var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
+  // notebook = new THREE.Mesh(notebookGeo, notebookMat);
+  // collidableMeshList.push(notebook);
+  // notebook.position.set(50, 4, -50);
+  // notebook.castShadow = true;
+  // notebook.receiveShadow = true;
+  // scene.add(notebook);
 
   fbxLoader.load("models/bed.fbx", function(object){
-    object.position.set(40, 11, 0);
+    object.position.set(30, 15, -60);
+    object.scale.set(1.5, 1.5, 1.5);
     //var bedMesh = new THREE.Mesh(object, new THREE.MeshPhongMaterial({color: 0x00ffff}));
     //console.log(object);
     object.traverse( function(child){
@@ -231,10 +221,17 @@ function init(){
     scene.add(object);
   });
 
-  fbxLoader.load("models/chair.fbx", function(object){
+  fbxLoader.load("models/Chair3.fbx", function(object){
     //console.log(object);
     object.scale.set(0.05, 0.05, 0.05);
-    object.position.set(-50, 0, 0);
+    object.position.set(-145, 0, 210);
+    object.rotation.y = -Math.PI/3-Math.PI/2;
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   });
 
@@ -244,39 +241,105 @@ function init(){
 
   fbxLoader.load('models/desk.fbx', function(object){
     object.scale.set(0.02, 0.02, 0.02);
-    object.position.set(-100, 12, 200);
+    object.position.set(-170, 12, 200);
+    object.rotation.y = Math.PI/2;
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   });
 
   fbxLoader.load('models/hanger.fbx', function(object){
-    object.scale.set(0.5, 0.5, 0.5);
-    object.position.set(0, -5, 50);
+    object.scale.set(0.8, 0.8, 0.8);
+    object.position.set(-40, -8, -50);
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   });
 
   fbxLoader.load('models/laptop.fbx', function(object){
-    object.position.set(-40, 0, -50);
+    object.position.set(-170, 29, 210);
+    object.scale.set(0.5, 0.5, 0.5);
+    //console.log(object);
+    notebook = object;
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   });
 
   fbxLoader.load('models/room.fbx', function(object){
     object.position.set(0, -5, 0);
-    object.scale.set(0.8, 0.8, 0.8);
+    object.scale.set(0.8, 1, 0.8);
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   })
   fbxLoader.load('models/table.fbx', function(object){
-    object.position.set(0, 15, 200);
+    object.position.set(150, 15, 200);
+    object.rotation.y = -Math.PI/2;
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   })
+
   fbxLoader.load('models/tv.fbx', function(object){
-    object.position.set(50, 0, 200);
+    object.position.set(150, 23, 300);
+    object.rotation.y = Math.PI/2;
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   })
+  var tvGeometry = new THREE.BoxGeometry(73, 47, 2);
+  var tvMaterial = new THREE.MeshPhongMaterial({color: 0x000000});
+  var tvMesh = new THREE.Mesh(tvGeometry, tvMaterial);
+  tvMesh.position.set(150, 53, 301);
+  tvMesh.castShadow = true;
+  tvMesh.receiveShadow = true;
+  scene.add(tvMesh);
+
   fbxLoader.load('models/tvstand.fbx', function(object){
-    console.log(object);
-    object.position.set(-100, -27, 300);
+    //console.log(object);
+    object.rotation.y = -Math.PI;
+    object.position.set(150, -15, 300);
+    object.scale.set(0.7, 0.5, 0.7);
+    object.traverse(function(child){
+      if(child instanceof THREE.Mesh){
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    })
     scene.add(object);
   });
+
+  fbxLoader.load('models/pingpongtable.fbx', function(object){
+    object.scale.set(0.3, 0.3, 0.3);
+    object.rotation.y = -Math.PI/2;
+    object.position.set(-20, 15, 200);
+    scene.add(object);
+  })
 
   var chairGeometry = new THREE.CylinderGeometry(12, 12, 20, 32);
   var chairMaterial = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
@@ -286,8 +349,12 @@ function init(){
   scene.add(chair);
 
   // 이동 처리
-  disX = (clickedPos.x - player.position.x);
-  disZ = (clickedPos.z - player.position.z);
+  try{
+    disX = (clickedPos.x - player.position.x);
+    disZ = (clickedPos.z - player.position.z);
+  }catch(e){
+    console.log("player loaded");
+  }
   angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
   render();
@@ -295,6 +362,16 @@ function init(){
 
 function render(){
   stats.update();
+
+  try{
+    if(action.time >= 3.3){
+      action.time = 1;
+      action.repetitions = 0;
+      action.play();
+    }
+  }catch(e){
+    console.log("cant find action");
+  }
   //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
   if ( mixers.length > 0 ) {
@@ -304,81 +381,122 @@ function render(){
 	}
 
   var lookVector = new THREE.Vector3();
-  lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
-  player.lookAt(lookVector);
+  try{
+    lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
+    player.lookAt(lookVector);
+  }catch(e){
+
+  }
 
   // 충돌 처리
-  for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
-  {
-      var localVertex = player.geometry.vertices[vertexIndex].clone();
-      var globalVertex = localVertex.applyMatrix4(player.matrix);
-      var directionVector = globalVertex.sub( player.position );
+  try{
+    for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
+    {
+        var localVertex = player.geometry.vertices[vertexIndex].clone();
+        var globalVertex = localVertex.applyMatrix4(player.matrix);
+        var directionVector = globalVertex.sub( player.position );
 
-      var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
-      var collisionResults = ray.intersectObjects( collidableMeshList );
-      if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
-      {
-          // a collision occurred... do something...
-          //clickedPos.set(player.position.x, player.position.y, player.position.z);
-          player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-          player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
-          clickedPos.set(player.position.x, player.position.y, player.position.z);
-      }
+        var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( collidableMeshList );
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
+        {
+            // a collision occurred... do something...
+            //clickedPos.set(player.position.x, player.position.y, player.position.z);
+            player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+            player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+            clickedPos.set(player.position.x, player.position.y, player.position.z);
+        }
+    }
+  }catch(e){
+
   }
 
   // 마우스 클릭한 좌표로 이동
-  disX = (clickedPos.x - player.position.x);
-  disZ = (clickedPos.z - player.position.z);
+  try{
+    disX = (clickedPos.x - player.position.x);
+    disZ = (clickedPos.z - player.position.z);
+  }catch(e){
 
-  if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
-    angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
-    player.position.x += Math.cos(angle * Math.PI/180)*speed;
-    player.position.z += Math.sin(angle * Math.PI/180)*speed;
+  }
 
-    fullPlayer.position.x += Math.cos(angle * Math.PI/180)*speed;
-    fullPlayer.position.z += Math.sin(angle * Math.PI/180)*speed;
+  try{
+    if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
+      try{
+        if(action.time >= 0.9){
+          action.time = 0;
+          action.repetitions = 0;
+          action.play();
+        }
+      }catch(e){
+        console.log("걷는거 안됨");
+      }
+      actionStop = true;
+      angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
+      player.position.x += Math.cos(angle * Math.PI/180)*speed;
+      player.position.z += Math.sin(angle * Math.PI/180)*speed;
 
-    playerPos.copy(player.position);
+      fullPlayer.position.x += Math.cos(angle * Math.PI/180)*speed;
+      fullPlayer.position.z += Math.sin(angle * Math.PI/180)*speed;
+
+      playerPos.copy(player.position);
+    }else{
+      try{
+        if(actionStop === true){
+          action.time = 1;
+          action.repetitions = 0;
+          action.play();
+          actionStop = false;
+        }
+      }catch(e){
+
+      }
+    }
+  }catch(e){
+
   }
 
   //노트북에 근접하면 게임 시작
-  if(playerPos.distanceTo(notebookPos) < 20 && firstVisit === true){
-    $(".codingStart").css({"display": ""})
-    firstVisit = false;
-    codingStarted = true;
+  try{
+    if(playerPos.distanceTo(notebook.position) < 20 && firstVisit === true){
+      $(".codingStart").css({"display": ""})
+      firstVisit = false;
+      codingStarted = true;
 
-    $("#startGame").click(function(){
-      $(".codingStart").css({"display": "none"})
-      $(".codingSelect").css({"display": ""})
+      $("#startGame").click(function(){
+        $(".codingStart").css({"display": "none"})
+        $(".codingSelect").css({"display": ""})
 
-      $("#C").click(function(){
-        c = shuffle(c);
-        selectedLang = c;
-        loadGame();
+        $("#C").click(function(){
+          c = shuffle(c);
+          selectedLang = c;
+          loadGame();
+        })
+
+        $("#Java").click(function(){
+          java = shuffle(java);
+          selectedLang = java;
+          loadGame();
+        })
+
+        $("#Javascript").click(function(){
+          javascript = shuffle(javascript);
+          selectedLang = javascript;
+          loadGame();
+        })
+
+        $("#HTML").click(function(){
+          html = shuffle(html);
+          selectedLang = html;
+          loadGame();
+        })
       })
+    }else if(playerPos.distanceTo(notebook.position) >= 20){
+      $(".codingActivity").css({"display": "none"})
+      firstVisit = true;
+      resetGame();
+    }
+  }catch(e){
 
-      $("#Java").click(function(){
-        java = shuffle(java);
-        selectedLang = java;
-        loadGame();
-      })
-
-      $("#Javascript").click(function(){
-        javascript = shuffle(javascript);
-        selectedLang = javascript;
-        loadGame();
-      })
-
-      $("#HTML").click(function(){
-        html = shuffle(html);
-        selectedLang = html;
-        loadGame();
-      })
-    })
-  }else if(playerPos.distanceTo(notebookPos) >= 20){
-    $(".codingActivity").css({"display": "none"})
-    firstVisit = true;
-    resetGame();
   }
 
   requestAnimationFrame(render);
@@ -430,6 +548,7 @@ function initStats() {
 
 // 마우스 클릭 좌표 구함
 function onMouseClick(event){
+  action.reset();
   if(codingStarted === false){
     event.preventDefault();
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
