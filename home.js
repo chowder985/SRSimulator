@@ -89,6 +89,7 @@ function init(){
 
   // 씬 구현
   scene = new THREE.Scene();
+  fullPlayer.position.set(0, 4, 0);
   scene.add(fullPlayer);
 
   // 카메라 구현
@@ -106,6 +107,21 @@ function init(){
 
   // 화면 반응형
   window.addEventListener( 'resize', onWindowResize, false );
+
+  loadManager = new THREE.LoadingManager();
+  loadManager.onProgress = function( item, loaded, total ) {
+    console.log( item, loaded, total );
+  };
+  var onProgress = function( xhr ) {
+    if ( xhr.lengthComputable ) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+    }
+  };
+  var onError = function( xhr ) {
+    console.error( xhr );
+  };
+  var fbxLoader = new THREE.FBXLoader(loadManager);
 
   // 바닥 구현
   var planeGeometry = new THREE.PlaneGeometry(10000, 10000);
@@ -143,6 +159,21 @@ function init(){
   scene.add(light);
 
   // 플레이어 구현
+  fbxLoader.load("models/IllHoon.FBX", function(object){
+    console.log(object);
+    object.scale.set(0.15, 0.15, 0.15);
+    object.mixer = new THREE.AnimationMixer(object);
+    mixers.push(object.mixer);
+    var action = object.mixer.clipAction(object.animations[0]);
+
+    setInterval(function(){
+      action.reset();
+    },1000)
+    action.play();
+
+    scene.add(object);
+  });
+
   var playerGeometry = new THREE.BoxGeometry(10, 10, 10);
   var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
   player = new THREE.Mesh(playerGeometry, playerMaterial);
@@ -153,7 +184,7 @@ function init(){
   player.receiveShadow = true;
   scene.add(player);
 
-  fullPlayer.add(player);
+  // fullPlayer.add(player);
   fullPlayer.add(camera);
 
   var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
@@ -164,29 +195,6 @@ function init(){
   notebook.castShadow = true;
   notebook.receiveShadow = true;
   scene.add(notebook);
-
-  loadManager = new THREE.LoadingManager();
-  loadManager.onProgress = function( item, loaded, total ) {
-    console.log( item, loaded, total );
-  };
-  var onProgress = function( xhr ) {
-    if ( xhr.lengthComputable ) {
-      var percentComplete = xhr.loaded / xhr.total * 100;
-      console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
-    }
-  };
-  var onError = function( xhr ) {
-    console.error( xhr );
-  };
-
-  // jsonLoader = new THREE.JSONLoader(loadManager);
-  // jsonLoader.load('models/labtop.js', function(geometry, materials){
-  //   //var material = materials[0];
-  //   var object = new THREE.Mesh(geometry, materials);
-  //   //object.castShadow = true;
-  //
-  //   scene.add(object);
-  // }, onProgress, onError);
 
   var mtlLoader = new THREE.MTLLoader();
   mtlLoader.setPath("models/");
@@ -209,7 +217,6 @@ function init(){
     }, onProgress, onError);
   });
 
-  var fbxLoader = new THREE.FBXLoader(loadManager);
   fbxLoader.load("models/bed.fbx", function(object){
     object.position.set(40, 11, 0);
     //var bedMesh = new THREE.Mesh(object, new THREE.MeshPhongMaterial({color: 0x00ffff}));
@@ -256,18 +263,15 @@ function init(){
     object.position.set(0, -5, 0);
     object.scale.set(0.8, 0.8, 0.8);
     scene.add(object);
-  });
-
+  })
   fbxLoader.load('models/table.fbx', function(object){
     object.position.set(0, 15, 200);
     scene.add(object);
-  });
-
+  })
   fbxLoader.load('models/tv.fbx', function(object){
     object.position.set(50, 0, 200);
     scene.add(object);
-  });
-
+  })
   fbxLoader.load('models/tvstand.fbx', function(object){
     console.log(object);
     object.position.set(-100, -27, 300);
@@ -282,8 +286,8 @@ function init(){
   scene.add(chair);
 
   // 이동 처리
-  disX = (clickedPos.x - fullPlayer.position.x);
-  disZ = (clickedPos.z - fullPlayer.position.z);
+  disX = (clickedPos.x - player.position.x);
+  disZ = (clickedPos.z - player.position.z);
   angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
 
   render();
@@ -293,6 +297,12 @@ function render(){
   stats.update();
   //console.log("x: "+clickedPos.position.x+", y: "+clickedPos.position.y+", z: "+clickedPos.position.z);
 
+  if ( mixers.length > 0 ) {
+		for ( var i = 0; i < mixers.length; i ++ ) {
+			mixers[ i ].update( clock.getDelta() );
+		}
+	}
+
   var lookVector = new THREE.Vector3();
   lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
   player.lookAt(lookVector);
@@ -301,30 +311,34 @@ function render(){
   for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
   {
       var localVertex = player.geometry.vertices[vertexIndex].clone();
-      var globalVertex = localVertex.applyMatrix4(fullPlayer.matrix);
-      var directionVector = globalVertex.sub( fullPlayer.position );
+      var globalVertex = localVertex.applyMatrix4(player.matrix);
+      var directionVector = globalVertex.sub( player.position );
 
-      var ray = new THREE.Raycaster( fullPlayer.position, directionVector.clone().normalize() );
+      var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
       var collisionResults = ray.intersectObjects( collidableMeshList );
       if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
       {
           // a collision occurred... do something...
           //clickedPos.set(player.position.x, player.position.y, player.position.z);
-          fullPlayer.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-          fullPlayer.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
-          clickedPos.set(fullPlayer.position.x, fullPlayer.position.y, fullPlayer.position.z);
+          player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+          player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+          clickedPos.set(player.position.x, player.position.y, player.position.z);
       }
   }
 
   // 마우스 클릭한 좌표로 이동
-  disX = (clickedPos.x - fullPlayer.position.x);
-  disZ = (clickedPos.z - fullPlayer.position.z);
+  disX = (clickedPos.x - player.position.x);
+  disZ = (clickedPos.z - player.position.z);
 
-  if(Math.floor(fullPlayer.position.x) !== Math.floor(clickedPos.x) || Math.floor(fullPlayer.position.z) !== Math.floor(clickedPos.z)){
+  if(Math.floor(player.position.x) !== Math.floor(clickedPos.x) || Math.floor(player.position.z) !== Math.floor(clickedPos.z)){
     angle = Number(Math.atan2(disZ, disX)) * 180/Math.PI;
+    player.position.x += Math.cos(angle * Math.PI/180)*speed;
+    player.position.z += Math.sin(angle * Math.PI/180)*speed;
+
     fullPlayer.position.x += Math.cos(angle * Math.PI/180)*speed;
     fullPlayer.position.z += Math.sin(angle * Math.PI/180)*speed;
-    playerPos.copy(fullPlayer.position);
+
+    playerPos.copy(player.position);
   }
 
   //노트북에 근접하면 게임 시작
@@ -373,15 +387,9 @@ function render(){
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
   while (0 !== currentIndex) {
-
-    // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
-
-    // And swap it with the current element.
     temporaryValue = array[currentIndex];
     array[currentIndex] = array[randomIndex];
     array[randomIndex] = temporaryValue;
@@ -396,7 +404,7 @@ function loadGame(){
   setTimeout(startGame, 3000);
   document.getElementById("inputCode").disabled = true;
   var count = setInterval(function(){
-    if(countDown<=0){
+    if(countDown <= 0){
       clearInterval(count);
     }
     $(".timer>p").text(countDown);
