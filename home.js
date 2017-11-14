@@ -9,9 +9,14 @@ var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
 var clickedPos = new THREE.Vector3(0, 0, 0);
 
+clickedPos.x = Number(localStorage.getItem("playerX"));
+clickedPos.y = Number(localStorage.getItem("playerY"));
+clickedPos.z = Number(localStorage.getItem("playerZ"));
+
 //var notebookPos = new THREE.Vector3(50, 4, -50);
 var playerPos = new THREE.Vector3(0, 4, 0);
 var firstVisit = true;
+var firstVisitTennis = true;
 var codingStarted = false;
 
 var renderer, scene, camera, light, controls;
@@ -19,10 +24,13 @@ var plane, wall, notebook, player, chair;
 var loadManager;
 
 var fullPlayer = new THREE.Object3D();
+var playerColl;
 
 var speed = 0.5;
 var disX, disZ;
 var angle;
+var notebookClick = false;
+var tabletennisClick = false;
 
 var date=1;
 var hours=0;
@@ -49,7 +57,7 @@ var javascript = [
   "for(var i=0; i<10; i++){"
 ];
 var html = [
-  "<h1></h1>"
+  "\<h1\>\<\/h1\>"
 ];
 var selectedLang;
 
@@ -57,6 +65,9 @@ var countDown=2;
 var elapse=0.0;
 var i=0;
 var numOfP=0;
+var count = null;
+
+var tableTennis;
 
 // var disX=null, disZ=null;
 
@@ -64,20 +75,27 @@ document.addEventListener('contextmenu', onMouseClick, false);
 
 function init(){
   // 시간 개념
-  document.querySelector("#dateText").textContent="Day "+date;
+  hours = Number(localStorage.getItem("hours"));
+  console.log(hours);
+  document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
   console.log(document.querySelector("#dateText").textContent);
+  if((Math.floor(hours/12)+1)%3===0){
+    window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
+  }
+
   startTime = setInterval(function(){
     hours++;
+    localStorage.setItem("hours", hours);
     console.log(hours);
-    if(hours === 12){
-      date++;
-      hours=0;
-      if(date%3===0){
-        window.location.href = "episode"+date/3+".html";
-      }
-      document.querySelector("#dateText").textContent="Day "+date;
+    document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
+    if((Math.floor(hours/12)+1)%3===0){
+      window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
     }
   }, 60000);
+
+  // 서버로부터 플레이어의 스탯 가져오기
+  // 서버로부터 데이터 받고 아래와 같이 스탯바에 적용
+  // $(".Coding>.gage").css({"width": codingStats+"px"});
 
   // 렌더러 구현
   renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -94,16 +112,22 @@ function init(){
   fullPlayer.position.set(0, 4, 0);
   scene.add(fullPlayer);
 
+  fullPlayer.position.x = Number(localStorage.getItem("playerX"));
+  fullPlayer.position.y = Number(localStorage.getItem("playerY"));
+  fullPlayer.position.z = Number(localStorage.getItem("playerZ"));
+
   // 카메라 구현
   camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 10000);
   camera.position.set(0, 75, 125);
   camera.rotation.x = -Math.PI/6;
   scene.add(camera);
 
+  fullPlayer.add(camera);
+
   // 카메라 조절
   controls = new THREE.OrbitControls( camera );
   controls.enableKeys = false;
-  //controls.enableZoom = false;
+  controls.enableZoom = false;
   controls.enablePan = false;
   controls.maxPolarAngle = Math.PI*0.5;
 
@@ -126,11 +150,14 @@ function init(){
   var fbxLoader = new THREE.FBXLoader(loadManager);
 
   // 바닥 구현
-  var planeGeometry = new THREE.PlaneGeometry(10000, 10000);
-  var planeMaterial = new THREE.MeshPhongMaterial({color: 0x2194ce, side: THREE.DoubleSide});
+  var planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+  var planeMaterial = new THREE.MeshPhongMaterial({color: 0xffffff, map: new THREE.TextureLoader().load("img/grass.jpg")});
+  planeMaterial.map.repeat.set(12, 12);
+  planeMaterial.map.wrapS = THREE.RepeatWrapping;
+  planeMaterial.map.wrapT = THREE.RepeatWrapping;
   plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI/2;
-  plane.position.set(0, -5, 0);
+  plane.position.set(0, -4, 0);
   plane.receiveShadow = true;
   //camera.lookAt(plane.position);
   scene.add(plane);
@@ -153,7 +180,7 @@ function init(){
   var ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
   scene.add(ambientLight);
 
-  light = new THREE.PointLight(0xffffff, 0.3, 10000);
+  light = new THREE.PointLight(0xffffff, 0.5, 10000);
   light.position.set(0, 70, 200);
   light.castShadow = true;
   light.shadow.camera.near = 0.1;
@@ -161,17 +188,30 @@ function init(){
   scene.add(light);
 
   // 플레이어 구현
-  fbxLoader.load("models/IllHoon.FBX", function(object){
-    //console.log(object);
+  var playerGeometry = new THREE.CylinderGeometry(8, 8, 32, 32);
+  var playerMaterial = new THREE.MeshPhongMaterial({opacity: 0.0, transparent: true});
+  playerColl = new THREE.Mesh(playerGeometry, playerMaterial);
+  playerColl.position.x = Number(localStorage.getItem("playerX"));
+  playerColl.position.y = Number(localStorage.getItem("playerY"));
+  playerColl.position.z = Number(localStorage.getItem("playerZ"));
+  scene.add(playerColl);
+
+  fbxLoader.load("models/illhoon.fbx", function(object){
+    console.log(object);
     player = object;
-    player.scale.set(0.15, 0.15, 0.15);
-    player.position.y +=5;
+    player.scale.set(0.05, 0.05, 0.05);
+    player.position.y +=4;
     player.traverse(function(child){
       if(child instanceof THREE.Mesh){
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
+
+    player.position.x = Number(localStorage.getItem("playerX"));
+    player.position.y = Number(localStorage.getItem("playerY"));
+    player.position.z = Number(localStorage.getItem("playerZ"));
+
     player.mixer = new THREE.AnimationMixer(player);
     mixers.push(player.mixer);
     action = player.mixer.clipAction(player.animations[0]);
@@ -184,27 +224,24 @@ function init(){
     scene.add(player);
   });
 
-  // var playerGeometry = new THREE.BoxGeometry(10, 10, 10);
-  // var playerMaterial = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  // player = new THREE.Mesh(playerGeometry, playerMaterial);
-  // player.position.y=4;
-  // player.position.x=0;
-  // player.position.z=0;
-  // player.castShadow = true;
-  // player.receiveShadow = true;
-  // scene.add(player);
-
   // fullPlayer.add(player);
-  fullPlayer.add(camera);
 
-  // var notebookGeo = new THREE.BoxGeometry(10, 10, 10);
-  // var notebookMat = new THREE.MeshPhongMaterial({color: 0x00ffff});
-  // notebook = new THREE.Mesh(notebookGeo, notebookMat);
-  // collidableMeshList.push(notebook);
-  // notebook.position.set(50, 4, -50);
-  // notebook.castShadow = true;
-  // notebook.receiveShadow = true;
-  // scene.add(notebook);
+  var deskGeo = new THREE.BoxGeometry(40, 30, 65);
+  var deskMat = new THREE.MeshBasicMaterial({opacity:0.0, transparent: true});
+  desk = new THREE.Mesh(deskGeo, deskMat);
+  collidableMeshList.push(desk);
+  desk.position.set(-170, 20, 200);
+  desk.castShadow = true;
+  desk.receiveShadow = true;
+  collidableMeshList.push(desk);
+  scene.add(desk);
+
+  var notebookCollMeshGeo = new THREE.BoxGeometry(10, 20, 20);
+  var notebookCollMeshMat = new THREE.MeshPhongMaterial({color: 0xfff, opacity: 0.0, transparent: true});
+  var notebookCollMesh = new THREE.Mesh(notebookCollMeshGeo, notebookCollMeshMat);
+  notebookCollMesh.position.set(-170, 29, 210);
+  notebookCollMesh.name = "notebook";
+  scene.add(notebookCollMesh);
 
   fbxLoader.load("models/bed.fbx", function(object){
     object.position.set(30, 15, -60);
@@ -221,7 +258,7 @@ function init(){
     scene.add(object);
   });
 
-  fbxLoader.load("models/Chair3.fbx", function(object){
+  fbxLoader.load("models/chair.fbx", function(object){
     //console.log(object);
     object.scale.set(0.05, 0.05, 0.05);
     object.position.set(-145, 0, 210);
@@ -235,9 +272,15 @@ function init(){
     scene.add(object);
   });
 
-  // fbxLoader.load('models/bookshelf.fbx', function(object){
-  //   scene.add(object);
-  // });
+  fbxLoader.load('models/bookshelf.fbx', function(object){
+    object.scale.set(0.15, 0.15, 0.15);
+    object.position.set(-190, 40, 300);
+    object.traverse(function(child){
+      child.castShadow = true;
+      child.receiveShadow = true;
+    })
+    scene.add(object);
+  });
 
   fbxLoader.load('models/desk.fbx', function(object){
     object.scale.set(0.02, 0.02, 0.02);
@@ -342,11 +385,115 @@ function init(){
   })
 
   var chairGeometry = new THREE.CylinderGeometry(12, 12, 20, 32);
-  var chairMaterial = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var chairMaterial = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true}); //opacity: 0.0, transparent: true
   chair = new THREE.Mesh(chairGeometry, chairMaterial);
   collidableMeshList.push(chair);
-  chair.position.set(0, 0, -43);
+  chair.position.set(-145, 0, 210);
   scene.add(chair);
+
+  // 방 벽
+  var roomWallNorthGeo = new THREE.BoxGeometry(150, 100, 5);
+  var roomWallNorthMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var roomWallNorth = new THREE.Mesh(roomWallNorthGeo, roomWallNorthMat);
+  roomWallNorth.position.set(0, 0, -80);
+  collidableMeshList.push(roomWallNorth);
+  scene.add(roomWallNorth);
+
+  var roomWallWestGeo = new THREE.BoxGeometry(155, 100, 5);
+  var roomWallWestMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var roomWallWest = new THREE.Mesh(roomWallWestGeo, roomWallWestMat);
+  roomWallWest.rotation.y = -Math.PI/2;
+  roomWallWest.position.set(-64, 0, 0);
+  collidableMeshList.push(roomWallWest);
+  scene.add(roomWallWest);
+
+  var roomWallEastGeo = new THREE.BoxGeometry(155, 100, 5);
+  var roomWallEastMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var roomWallEast = new THREE.Mesh(roomWallEastGeo, roomWallEastMat);
+  roomWallEast.rotation.y = -Math.PI/2;
+  roomWallEast.position.set(64, 0, 0);
+  collidableMeshList.push(roomWallEast);
+  scene.add(roomWallEast);
+
+  var wallNorthGeo = new THREE.BoxGeometry(300, 100, 5);
+  var wallNorthMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var wallNorth = new THREE.Mesh(wallNorthGeo, wallNorthMat);
+  wallNorth.position.set(135, 10, 80);
+  collidableMeshList.push(wallNorth);
+  scene.add(wallNorth);
+
+  var wallNorth2Geo = new THREE.BoxGeometry(140, 100, 5);
+  var wallNorth2Mat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var wallNorth2 = new THREE.Mesh(wallNorth2Geo, wallNorth2Mat);
+  wallNorth2.position.set(-125, 10, 80);
+  collidableMeshList.push(wallNorth2);
+  scene.add(wallNorth2);
+
+  var wallEastGeo = new THREE.BoxGeometry(5, 100, 250);
+  var wallEastMat = new THREE.MeshBasicMaterial({color: 0xfff, opacity: 0.0, transparent: true});
+  var wallEast = new THREE.Mesh(wallEastGeo, wallEastMat);
+  wallEast.position.set(282, 10, 200);
+  collidableMeshList.push(wallEast);
+  scene.add(wallEast);
+
+  var wallWestGeo = new THREE.BoxGeometry(5, 100, 250);
+  var wallWestMat = new THREE.MeshBasicMaterial({opacity: 0.0, transparent: true});
+  var wallWest = new THREE.Mesh(wallWestGeo, wallWestMat);
+  wallWest.position.set(-200, 10, 200);
+  collidableMeshList.push(wallWest);
+  scene.add(wallWest);
+
+  var wallSouthGeo = new THREE.BoxGeometry(500, 100, 5);
+  var wallSouthMat = new THREE.MeshPhongMaterial({color: 0x7E7E7E});
+  var wallSouth = new THREE.Mesh(wallSouthGeo, wallSouthMat);
+  wallSouth.position.set(50, 43, 328);
+  collidableMeshList.push(wallSouth);
+  wallSouth.receiveShadow = true;
+  scene.add(wallSouth);
+
+  //침대 충돌 메시
+  var bedCollGeo = new THREE.BoxGeometry(50, 10, 85);
+  var bedCollMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  var bedColl = new THREE.Mesh(bedCollGeo, bedCollMat);
+  bedColl.position.set(30, 0, -20);
+  collidableMeshList.push(bedColl);
+  scene.add(bedColl);
+
+  var standGeo = new THREE.CylinderGeometry(6, 6, 20, 32);
+  var standMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  var stand = new THREE.Mesh(standGeo, standMat);
+  stand.position.set(-40, 0, -50);
+  collidableMeshList.push(stand);
+  scene.add(stand);
+
+  var bookshelfCollGeo = new THREE.BoxGeometry(23, 10, 40);
+  var bookshelfCollMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  var bookshelfColl = new THREE.Mesh(bookshelfCollGeo, bookshelfCollMat);
+  bookshelfColl.position.set(-190, 0, 300);
+  collidableMeshList.push(bookshelfColl);
+  scene.add(bookshelfColl);
+
+  var tableTennisGeo = new THREE.BoxGeometry(50, 10, 80);
+  var tableTennisMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  tableTennis = new THREE.Mesh(tableTennisGeo, tableTennisMat);
+  tableTennis.position.set(-20, 15, 200);
+  tableTennis.name = "tabletennis";
+  collidableMeshList.push(tableTennis);
+  scene.add(tableTennis);
+
+  var tableCollGeo = new THREE.BoxGeometry(85, 10, 50);
+  var tableCollMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  var tableColl = new THREE.Mesh(tableCollGeo, tableCollMat);
+  tableColl.position.set(150, 15, 200);
+  collidableMeshList.push(tableColl);
+  scene.add(tableColl);
+
+  var tvCollGeo = new THREE.BoxGeometry(80, 10, 30);
+  var tvCollMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
+  var tvColl = new THREE.Mesh(tvCollGeo, tvCollMat);
+  tvColl.position.set(150, 0, 300);
+  collidableMeshList.push(tvColl);
+  scene.add(tvColl);
 
   // 이동 처리
   try{
@@ -380,30 +527,25 @@ function render(){
 		}
 	}
 
-  var lookVector = new THREE.Vector3();
-  try{
-    lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
-    player.lookAt(lookVector);
-  }catch(e){
-
-  }
-
   // 충돌 처리
   try{
-    for (var vertexIndex = 0; vertexIndex < player.geometry.vertices.length; vertexIndex++)
+    for (var vertexIndex = 0; vertexIndex < playerColl.geometry.vertices.length; vertexIndex++)
     {
-        var localVertex = player.geometry.vertices[vertexIndex].clone();
-        var globalVertex = localVertex.applyMatrix4(player.matrix);
-        var directionVector = globalVertex.sub( player.position );
+        var localVertex = playerColl.geometry.vertices[vertexIndex].clone();
+        var globalVertex = localVertex.applyMatrix4(playerColl.matrix);
+        var directionVector = globalVertex.sub( playerColl.position );
 
-        var ray = new THREE.Raycaster( player.position, directionVector.clone().normalize() );
+        var ray = new THREE.Raycaster( playerColl.position, directionVector.clone().normalize() );
         var collisionResults = ray.intersectObjects( collidableMeshList );
         if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
         {
             // a collision occurred... do something...
+             console.log("충돌");
             //clickedPos.set(player.position.x, player.position.y, player.position.z);
             player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
             player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+            playerColl.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+            playerColl.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
             clickedPos.set(player.position.x, player.position.y, player.position.z);
         }
     }
@@ -435,6 +577,9 @@ function render(){
       player.position.x += Math.cos(angle * Math.PI/180)*speed;
       player.position.z += Math.sin(angle * Math.PI/180)*speed;
 
+      playerColl.position.x += Math.cos(angle * Math.PI/180)*speed;
+      playerColl.position.z += Math.sin(angle * Math.PI/180)*speed;
+
       fullPlayer.position.x += Math.cos(angle * Math.PI/180)*speed;
       fullPlayer.position.z += Math.sin(angle * Math.PI/180)*speed;
 
@@ -457,7 +602,7 @@ function render(){
 
   //노트북에 근접하면 게임 시작
   try{
-    if(playerPos.distanceTo(notebook.position) < 20 && firstVisit === true){
+    if((notebookClick === true) && (playerPos.distanceTo(notebook.position) < 80) && (firstVisit === true)){
       $(".codingStart").css({"display": ""})
       firstVisit = false;
       codingStarted = true;
@@ -490,10 +635,27 @@ function render(){
           loadGame();
         })
       })
-    }else if(playerPos.distanceTo(notebook.position) >= 20){
+    }else if(playerPos.distanceTo(notebook.position) >= 80){
       $(".codingActivity").css({"display": "none"})
       firstVisit = true;
       resetGame();
+    }
+  }catch(e){
+
+  }
+
+  // 탁구대와 가까워지면 페이지 이동
+  try{
+    if((tabletennisClick === true) && (playerPos.distanceTo(tableTennis.position) < 80) && (firstVisitTennis === true)){
+      firstVisitTennis = false;
+      hours+=4;
+      localStorage.setItem("hours", hours);
+      localStorage.setItem("playerX", playerPos.x);
+      localStorage.setItem("playerY", playerPos.y);
+      localStorage.setItem("playerZ", playerPos.z);
+      window.location.href = "tableTennis.html";
+    }else if(playerPos.distanceTo(tableTennis.position) >= 80){
+      firstVisitTennis = true;
     }
   }catch(e){
 
@@ -521,7 +683,7 @@ function loadGame(){
   $(".codingActivity").css({"display": ""})
   setTimeout(startGame, 3000);
   document.getElementById("inputCode").disabled = true;
-  var count = setInterval(function(){
+  count = setInterval(function(){
     if(countDown <= 0){
       clearInterval(count);
     }
@@ -557,9 +719,34 @@ function onMouseClick(event){
     camRaycaster.setFromCamera( mouse, camera );
 
     var intersects = camRaycaster.intersectObjects(scene.children);
+    var isNote = false;
+    var isTable = false;
 
     for ( var i = 0; i < intersects.length; i++ ) {
+      console.log(intersects);
       clickedPos.copy(intersects[i].point);
+      if(intersects[i].object.name === "notebook"){
+        notebookClick = true;
+        isNote = true;
+      }else if(intersects[i].object.name === "tabletennis"){
+        console.log("탁구 클릭");
+        tabletennisClick = true;
+        isTable = true;
+      }
+    }
+    if(isNote === false){
+      notebookClick = false;
+    }
+    if(isTable === false){
+      tabletennisClick = false;
+    }
+
+    var lookVector = new THREE.Vector3();
+    try{
+      lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
+      player.lookAt(lookVector);
+    }catch(e){
+
     }
   }
 }

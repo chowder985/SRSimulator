@@ -43,6 +43,28 @@ function onEnter(e){
       $(".textToType").append("<p>"+selectedLang[i]+"</p>");
     }else{
       //alert("Game Over! "+elapse+"초 기록!");
+      console.log(elapse);
+      var sendCodingData=0;
+      if(elapse <= 60){
+        sendCodingData=16;
+      }
+      else if(elapse <= 80){
+        sendCodingData=8;
+      }
+      else if(elapse <= 100){
+        sendCodingData=5;
+      }
+      else{
+        sendCodingData=-16;
+      }
+      // 서버에 sendCodingData값 전송 후 Coding 데이터에 값 추가하기
+
+      hours+=3;
+      localStorage.setItem("hours", hours);
+      if((Math.floor(hours/12)+1)%3===0){
+        window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
+      }
+      console.log(hours);
       resetGame();
       $(".codingActivity").css({"display": "none"})
     }

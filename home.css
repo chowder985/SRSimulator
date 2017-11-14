@@ -30,30 +30,70 @@ canvas{
   border: 1px solid black;
   margin-bottom: 13px;
   background: black;
+  font-family: sans-serif;
 }
 
 .Health > .gage{
-  width: 100px;
+  width: 80px;
   height: 35px;
-  background: red;
-}
-
-.Dating > .gage{
-  width: 90px;
-  height: 35px;
-  background: blue;
-}
-
-.Coding > .gage{
-  width: 30px;
-  height: 35px;
-  background: green;
+  background: #ff4d4d;
 }
 
 .Happiness > .gage{
-  width: 50px;
+  width: 80px;
   height: 35px;
-  background: yellow;
+  background: #4d4dff;
+}
+
+.Coding > .gage{
+  width: 80px;
+  height: 35px;
+  background: #00b33c;
+}
+
+.Dating > .gage{
+  width: 80px;
+  height: 35px;
+  background: #ffff33;
+}
+
+.gage-text{
+  position: absolute;
+  top: 61px;
+  right: 45px;
+  height: 200px;
+  width: 50px;
+  font-family: sans-serif;
+}
+
+.health-text{
+  position: absolute;
+  color: #ff4d4d;
+  top: 10px;
+  right: 10px;
+}
+
+.coding-text{
+  position: absolute;
+  color: #00b33c;
+  top: 100px;
+  left: 12px;
+}
+
+.happiness-text{
+  position: absolute;
+  width: 50px;
+  color: #4d4dff;
+  top: 60px;
+  left: 5px;
+}
+
+.dating-text{
+  position: absolute;
+  width: 50px;
+  color: #ffff33;
+  top: 160px;
+  left: 5px;
 }
 
 #Date{

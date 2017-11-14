@@ -178,7 +178,7 @@ function init() {
   };
 
   var loader = new THREE.FBXLoader(loadManager);
-  loader.load( "models/pingpongracket.fbx", function(object){
+  loader.load( "models/pr.fbx", function(object){
     console.log("Loaded racketAI");
     paddleChildAI = object;
     paddleChildAI.rotation.y = -Math.PI/2;
@@ -186,7 +186,7 @@ function init() {
     paddleAI.add(paddleChildAI);
   }, onProgress, onError);
 
-  loader.load( "models/pingpongracket.fbx", function(object){
+  loader.load( "models/pr.fbx", function(object){
     console.log("Loaded racket");
     paddleChild = object;
     paddleChild.rotation.y = -Math.PI/2;
@@ -304,10 +304,28 @@ function loop() {
         document.getElementById("userplayer").textContent = userplayerScore;
       }
 
-      if(userplayerScore === 7)
+      if(userplayerScore === 7){
         document.getElementById("scoreboard").textContent = "You Win!"
-      else if(aiplayerScore === 7)
+        var difScore = userplayerScore - aiplayerScore;
+        var sendHealthData=0;
+        if(difScore >= 6){
+          sendHealthData+=16;
+        }else if(difScore >= 3){
+          sendHealthData+=8;
+        }else{
+          sendHealthData+=5;
+        }
+        // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
+
+        window.location.href = "home.html";
+      }
+      else if(aiplayerScore === 7){
         document.getElementById("scoreboard").textContent = "You Lose"
+        var sendHealthData=-10;
+        // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
+        
+        window.location.href = "home.html";
+      }
 
       respawnBall();
     }
