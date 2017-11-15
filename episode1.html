@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>SRS Episode 1</title>
+    <link rel="stylesheet" href="interactiveFiction.css">
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <img id="ui" src="img/interactiveFiction.png">
+    <span id="name">삼훈이</span>
+    <span id="day">Day 1</span>
+    <span id="episode">Episode 1 - 첫 만남</span>
+      <div id="scene1" class="content">
+        <img src="episode1-image/0.JPG">
+        <span id="text">난 선린 인터넷 고등학교에 재학중인 사삼훈이다...</span>
+      </div>
+
+      <div id="scene2" class="content" style="display: none">
+        <img src="episode1-image/0.JPG">
+        <span id="text">오늘도 나만의 즐거운 선린 라이프를 위해 교실로 향한다...</span>
+      </div>
+
+      <div id="scene3" class="content" style="display: none">
+        <img src="episode1-image/1.JPG">
+        <span id="text">여기가 바로 내자리다</span>
+      </div>
+
+      <div id="scene4" class="content" style="display: none">
+        <img src="episode1-image/1.JPG">
+        <span id="text">오로지 나만을 위한 자리...</span>
+      </div>
+
+      <div id="scene5" class="content" style="display: none">
+        <img src="episode1-image/1.JPG">
+        <span id="text">여기에 앉으면 모두 내 아래에 있는것 같은 느낌이든다</span>
+      </div>
+
+      <div id="scene6" class="content" style="display: none">
+        <img src="episode1-image/2.JPG">
+        <span id="text">때로는 가끔 선린의 아름다운 운동장에 취하여 창가에 앉기도 한다</span>
+      </div>
+
+      <div id="scene7" class="content" style="display: none">
+        <img src="episode1-image/3.JPG">
+        <span id="text">이곳은 햇빛이 잘들어 공부하기 딱 좋다</span>
+      </div>
+
+      <div id="scene8" class="content" style="display: none">
+        <img src="episode1-image/4.JPG">
+        <span id="text">공부에 질릴때쯤 바깥을 한번 바라보면 내 마음이 운동장 크기만큼 가득 찬다...</span>
+      </div>
+
+      <div id="scene9" class="content" style="display: none">
+        <img src="episode1-image/5.JPG">
+        <span id="text">나는 내가 여기서 가장 우월하다 생각하기 때문에 딴놈들과는 어울려 다니지 않는다.</span>
+      </div>
+
+      <div id="scene10" class="content" style="display: none">
+        <img src="episode1-image/6.JPG">
+        <span id="text">나는 내가 인정한 인물이 아니면 같이 밥을 먹지 않는다.</span>
+      </div>
+
+      <div id="scene11" class="content" style="display: none">
+        <img src="episode1-image/7.JPG">
+        <span id="text">그렇기에 나는 혼자 먹는다.</span>
+      </div>
+
+      <div id="scene12" class="content" style="display: none">
+        <img src="episode1-image/8.png">
+        <span id="text">???: 거기 너! 자리없는데 같이 앉아서 먹어도 될까?</span>
+      </div>
+
+      <div id="scene13" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">???: 혼자서 밥먹으면 좋냐? 같이 앉아줄게~</span>
+        <div class="select">
+          <button id="1" onclick="first()">1) 어...그래</button>
+          <button id="2" onclick="second()">2) 자리 다른데 알아봐</button>
+          <button id="3" onclick="third()">3) ......</button>
+        </div>
+      </div>
+
+      <div id="scene13-1" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">음...그럼 앉을게</span>
+      </div>
+      <div id="scene13-2" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">그럼 감사히 앉을게!</span>
+      </div>
+      <div id="scene13-3" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">침묵은 동의!</span>
+      </div>
+
+      <div id="scene14" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">(아..ㅆㅂ 결국 앉아버리네)</span>
+      </div>
+
+      <div id="scene15" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">일단 같은 테이블에 앉았으니까 이름이나 터볼까? 내이름은 김예진!</span>
+        <div class="select">
+          <button id="4" onclick="fourth()">1) 내이름은 삼훈!</button>
+          <button id="5" onclick="fifth()">2) 뭔데 초면부터 친한척이냐?</button>
+          <button id="6" onclick="sixth()">3) ......</button>
+        </div>
+      </div>
+
+      <div id="scene15-1" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">어.. 삼훈이구나..!</span>
+      </div>
+      <div id="scene15-2" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">그 성격 보아하니 선린고 대표 기만자 삼훈이 맞지?</span>
+      </div>
+      <div id="scene15-3" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">그 성격 보아하니 선린고 대표 기만자 삼훈이 맞지?</span>
+      </div>
+
+      <div id="scene16" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">하아... 말을 말자</span>
+      </div>
+
+      <div id="scene17" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">역시 선린 급식은 굉장히 맛있지 않아? 매일 먹을때마다 새로운거 같아!</span>
+      </div>
+
+      <div id="scene18" class="content" style="display: none">
+        <img src="episode1-image/9.png">
+        <span id="text">뭐... 그렇다 하지</span>
+      </div>
+
+  </body>
+  <script type="text/javascript">
+    var scene = 1;
+
+    function first(){
+      var sendDatingData = -48;
+      // 서버로 데이터 전송
+
+      $("#scene13").css({"display": "none"});
+      $("#scene13-1").css({"display": ""});
+      scene = 13;
+    }
+
+    function second(){
+      var sendDatingData = 16;
+      // 서버로 데이터 전송
+
+      $("#scene13").css({"display": "none"});
+      $("#scene13-2").css({"display": ""});
+      scene = 13;
+    }
+
+    function third(){
+      var sendDatingData = 0;
+      // 서버로 데이터 전송
+
+      $("#scene13").css({"display": "none"});
+      $("#scene13-3").css({"display": ""});
+      scene = 13;
+    }
+
+    function fourth(){
+      var sendDatingData = -48;
+      // 서버로 데이터 전송
+
+      $("#scene15").css({"display": "none"});
+      $("#scene15-1").css({"display": ""});
+      scene = 16;
+    }
+
+    function fifth(){
+      var sendDatingData = 16;
+      // 서버로 데이터 전송
+
+      $("#scene15").css({"display": "none"});
+      $("#scene15-2").css({"display": ""});
+      scene = 15;
+    }
+
+    function sixth(){
+      var sendDatingData = 0;
+      // 서버로 데이터 전송
+
+      $("#scene15").css({"display": "none"});
+      $("#scene15-3").css({"display": ""});
+      scene = 15;
+    }
+
+    document.addEventListener("click", function(){
+      if(scene!==13 && scene!==15){
+        $("#scene13-1").css({"display": "none"});
+        $("#scene13-2").css({"display": "none"});
+        $("#scene13-3").css({"display": "none"});
+        $("#scene15-1").css({"display": "none"});
+        $("#scene15-2").css({"display": "none"});
+        $("#scene15-3").css({"display": "none"});
+        console.log(scene);
+        $("#scene"+scene).css({"display": "none"});
+        scene++;
+        if(scene===12 || scene===13 || scene===15 || scene===17){
+          $("#name").text("???");
+        }else{
+          $("#name").text("삼훈이");
+        }
+        $("#scene"+scene).css({"display": ""});
+      }
+    });
+  </script>
+</html>
