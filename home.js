@@ -28,9 +28,10 @@ var angle;
 var notebookClick = false;
 var tabletennisClick = false;
 
-var date=1;
+var day=1;
 var hours=0;
 var startTime;
+var checkDayPast=0;
 
 var collidableMeshList = [];
 // var collided = false;
@@ -74,11 +75,28 @@ function init(){
   // 새로 고침 했을 시 바로 업데이트
   hours = Number(localStorage.getItem("hours"));
   console.log(hours);
-  document.querySelector(".Hour").textContent = Number(hours%12)+":00";
-  document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
+  day = Number(localStorage.getItem("day"));
+  console.log(day+1);
+  if(hours%12===0){
+    $(".sleep").fadeIn("slow", function(){
+      setTimeout(function(){
+        $(".sleep").fadeOut("slow", function(){
+          try{
+            player.position.set(0, 4, 0);
+            playerColl.position.set(0, 0, 0);
+            fullPlayer.position.set(0, 0, 0);
+          }catch(e){
+
+          }
+        });
+      }, 1000);
+    });
+  }
+  document.querySelector(".Hour").textContent = hours+":00";
+  document.querySelector("#dateText").textContent="Day "+(day+1);
   console.log(document.querySelector("#dateText").textContent);
-  if((Math.floor(hours/12)+1)%3===0){
-    window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
+  if((day+1)%3===0){
+    window.location.href = "episode"+(day+1)/3+".html";
   }
 
   // 1분이 지날때마다 한시간이 지나감
@@ -86,10 +104,28 @@ function init(){
     hours++;
     localStorage.setItem("hours", hours);
     console.log(hours);
-    document.querySelector(".Hour").textContent = Number(hours%12)+":00";
-    document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
-    if((Math.floor(hours/12)+1)%3===0){
-      window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
+    if(hours%12===0){
+      day++;
+      $(".sleep").fadeIn("slow", function(){
+        setTimeout(function(){
+          $(".sleep").fadeOut("slow", function(){
+            try{
+              player.position.set(0, 4, 0);
+              playerColl.position.set(0, 0, 0);
+              fullPlayer.position.set(0, 0, 0);
+            }catch(e){
+
+            }
+          });
+        }, 1000);
+      });
+      hours=0;
+      localStorage.setItem("hours", hours);
+    }
+    document.querySelector(".Hour").textContent = hours+":00";
+    document.querySelector("#dateText").textContent="Day "+(day+1);
+    if((day+1)%3===0){
+      window.location.href = "episode"+(day+1)/3+".html";
     }
   }, 60000);
 
@@ -253,6 +289,14 @@ function init(){
   clickedPos.x = Number(localStorage.getItem("playerX"));
   clickedPos.y = Number(localStorage.getItem("playerY"));
   clickedPos.z = Number(localStorage.getItem("playerZ"));
+
+  var playerLeftFaceGeo = new THREE.PlaneGeometry(10, 10);
+  var playerLeftFaceMat = new THREE.MeshPhongMaterial({color: 0xD5825C});
+  var playerLeftFace = new THREE.Mesh(playerLeftFaceGeo, playerLeftFaceMat);
+  playerLeftFace.position.set(4.5, 32, 0);
+  playerLeftFace.rotation.y = Math.PI/2;
+  scene.add(playerLeftFace);
+  playerColl.add(playerLeftFace);
 
   var deskGeo = new THREE.BoxGeometry(40, 30, 65);
   var deskMat = new THREE.MeshBasicMaterial({opacity:0.0, transparent: true});
@@ -580,6 +624,8 @@ function render(){
             player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
             playerColl.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
             playerColl.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+            fullPlayer.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
+            fullPlayer.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
             clickedPos.set(player.position.x, player.position.y, player.position.z);
         }
     }
@@ -687,9 +733,14 @@ function render(){
       firstVisitTennis = false;
       // 탁구 소요 시간 4시간 추가
       hours+=4;
+      if((hours/12) > 1){
+        hours = 0;
+        day++;
+      }
       localStorage.setItem("hours", hours);
-      document.querySelector(".Hour").textContent = Number(hours%12)+":00";
-      document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
+      localStorage.setItem("day", day);
+      // document.querySelector(".Hour").textContent = hours+":00";
+      // document.querySelector("#dateText").textContent="Day "+(day+1);
       localStorage.setItem("playerX", playerPos.x);
       localStorage.setItem("playerY", playerPos.y);
       localStorage.setItem("playerZ", playerPos.z);
@@ -785,6 +836,7 @@ function onMouseClick(event){
     try{
       lookVector.set(clickedPos.x, player.position.y, clickedPos.z);
       player.lookAt(lookVector);
+      playerColl.lookAt(lookVector);
     }catch(e){
 
     }

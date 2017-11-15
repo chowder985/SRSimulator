@@ -39,6 +39,10 @@ function onEnter(e){
     }
     i++;
     numOfP++;
+    if(numOfP > 10){
+      $(".textToType > p").remove();
+      numOfP = 0;
+    }
     if(i < selectedLang.length){
       $(".textToType").append("<p>"+selectedLang[i]+"</p>");
     }else{
@@ -61,13 +65,15 @@ function onEnter(e){
 
       // 탁구 소요시간 3시간 추가
       hours+=3;
-      localStorage.setItem("hours", hours);
-      document.querySelector(".Hour").textContent = Number(hours%12)+":00";
-      document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
-      if((Math.floor(hours/12)+1)%3===0){
-        window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
+      if((hours/12) > 1){
+        hours = 0;
+        day++;
       }
-      console.log(hours);
+      localStorage.setItem("hours", hours);
+      localStorage.setItem("day", day);
+      // document.querySelector(".Hour").textContent = Number(hours%12)+":00";
+      // document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
+      //console.log(hours);
       resetGame();
       $(".codingActivity").css({"display": "none"})
       localStorage.setItem("playerX", player.position.x);
