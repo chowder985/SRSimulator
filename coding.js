@@ -79,7 +79,7 @@ function onEnter(e){
       localStorage.setItem("playerX", player.position.x);
       localStorage.setItem("playerY", player.position.y);
       localStorage.setItem("playerZ", player.position.z);
-      location.reload();
+      window.location.href = "home.html";
     }
   }
 }

@@ -78,6 +78,7 @@ function init(){
   day = Number(localStorage.getItem("day"));
   console.log(day+1);
   if(hours%12===0){
+    console.log();
     $(".sleep").fadeIn("slow", function(){
       setTimeout(function(){
         $(".sleep").fadeOut("slow", function(){
@@ -85,12 +86,15 @@ function init(){
             player.position.set(0, 4, 0);
             playerColl.position.set(0, 0, 0);
             fullPlayer.position.set(0, 0, 0);
+            clickedPos.set(0, 0, 0);
           }catch(e){
 
           }
         });
       }, 1000);
     });
+    hours=0;
+    localStorage.setItem("hours", hours);
   }
   document.querySelector(".Hour").textContent = hours+":00";
   document.querySelector("#dateText").textContent="Day "+(day+1);
@@ -113,6 +117,7 @@ function init(){
               player.position.set(0, 4, 0);
               playerColl.position.set(0, 0, 0);
               fullPlayer.position.set(0, 0, 0);
+              clickedPos.set(0, 0, 0);
             }catch(e){
 
             }
@@ -801,7 +806,7 @@ function initStats() {
 
 // 마우스 클릭 좌표 구함
 function onMouseClick(event){
-  //action.reset();
+  action.reset();
   if(codingStarted === false){
     event.preventDefault();
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
