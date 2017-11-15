@@ -608,9 +608,9 @@ function render(){
       $(".codingStart").css({"display": ""})
       firstVisit = false;
       codingStarted = true;
-      localStorage.setItem("playerX", playerPos.x);
-      localStorage.setItem("playerY", playerPos.y);
-      localStorage.setItem("playerZ", playerPos.z);
+      // localStorage.setItem("playerX", playerPos.x);
+      // localStorage.setItem("playerY", playerPos.y);
+      // localStorage.setItem("playerZ", playerPos.z);
 
       $("#startGame").click(function(){
         $(".codingStart").css({"display": "none"})

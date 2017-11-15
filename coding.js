@@ -70,6 +70,9 @@ function onEnter(e){
       console.log(hours);
       resetGame();
       $(".codingActivity").css({"display": "none"})
+      localStorage.setItem("playerX", player.position.x);
+      localStorage.setItem("playerY", player.position.y);
+      localStorage.setItem("playerZ", player.position.z);
       location.reload();
     }
   }
