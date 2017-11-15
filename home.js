@@ -9,10 +9,6 @@ var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
 var clickedPos = new THREE.Vector3(0, 0, 0);
 
-clickedPos.x = Number(localStorage.getItem("playerX"));
-clickedPos.y = Number(localStorage.getItem("playerY"));
-clickedPos.z = Number(localStorage.getItem("playerZ"));
-
 //var notebookPos = new THREE.Vector3(50, 4, -50);
 var playerPos = new THREE.Vector3(0, 4, 0);
 var firstVisit = true;
@@ -75,18 +71,22 @@ document.addEventListener('contextmenu', onMouseClick, false);
 
 function init(){
   // 시간 개념
+  // 새로 고침 했을 시 바로 업데이트
   hours = Number(localStorage.getItem("hours"));
   console.log(hours);
+  document.querySelector(".Hour").textContent = Number(hours%12)+":00";
   document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
   console.log(document.querySelector("#dateText").textContent);
   if((Math.floor(hours/12)+1)%3===0){
     window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
   }
 
+  // 1분이 지날때마다 한시간이 지나감
   startTime = setInterval(function(){
     hours++;
     localStorage.setItem("hours", hours);
     console.log(hours);
+    document.querySelector(".Hour").textContent = Number(hours%12)+":00";
     document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
     if((Math.floor(hours/12)+1)%3===0){
       window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
@@ -111,10 +111,6 @@ function init(){
   scene = new THREE.Scene();
   fullPlayer.position.set(0, 4, 0);
   scene.add(fullPlayer);
-
-  fullPlayer.position.x = Number(localStorage.getItem("playerX"));
-  fullPlayer.position.y = Number(localStorage.getItem("playerY"));
-  fullPlayer.position.z = Number(localStorage.getItem("playerZ"));
 
   // 카메라 구현
   camera = new THREE.PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 10000);
@@ -188,14 +184,6 @@ function init(){
   scene.add(light);
 
   // 플레이어 구현
-  var playerGeometry = new THREE.CylinderGeometry(8, 8, 32, 32);
-  var playerMaterial = new THREE.MeshPhongMaterial({opacity: 0.0, transparent: true});
-  playerColl = new THREE.Mesh(playerGeometry, playerMaterial);
-  playerColl.position.x = Number(localStorage.getItem("playerX"));
-  playerColl.position.y = Number(localStorage.getItem("playerY"));
-  playerColl.position.z = Number(localStorage.getItem("playerZ"));
-  scene.add(playerColl);
-
   fbxLoader.load("models/illhoon.fbx", function(object){
     console.log(object);
     player = object;
@@ -224,7 +212,21 @@ function init(){
     scene.add(player);
   });
 
-  // fullPlayer.add(player);
+  var playerGeometry = new THREE.CylinderGeometry(8, 8, 32, 32);
+  var playerMaterial = new THREE.MeshPhongMaterial({opacity: 0.0, transparent: true});
+  playerColl = new THREE.Mesh(playerGeometry, playerMaterial);
+  playerColl.position.x = Number(localStorage.getItem("playerX"));
+  playerColl.position.y = Number(localStorage.getItem("playerY"));
+  playerColl.position.z = Number(localStorage.getItem("playerZ"));
+  scene.add(playerColl);
+
+  fullPlayer.position.x = Number(localStorage.getItem("playerX"));
+  fullPlayer.position.y = Number(localStorage.getItem("playerY"));
+  fullPlayer.position.z = Number(localStorage.getItem("playerZ"));
+
+  clickedPos.x = Number(localStorage.getItem("playerX"));
+  clickedPos.y = Number(localStorage.getItem("playerY"));
+  clickedPos.z = Number(localStorage.getItem("playerZ"));
 
   var deskGeo = new THREE.BoxGeometry(40, 30, 65);
   var deskMat = new THREE.MeshBasicMaterial({opacity:0.0, transparent: true});
@@ -606,6 +608,9 @@ function render(){
       $(".codingStart").css({"display": ""})
       firstVisit = false;
       codingStarted = true;
+      localStorage.setItem("playerX", playerPos.x);
+      localStorage.setItem("playerY", playerPos.y);
+      localStorage.setItem("playerZ", playerPos.z);
 
       $("#startGame").click(function(){
         $(".codingStart").css({"display": "none"})
@@ -648,8 +653,11 @@ function render(){
   try{
     if((tabletennisClick === true) && (playerPos.distanceTo(tableTennis.position) < 80) && (firstVisitTennis === true)){
       firstVisitTennis = false;
+      // 탁구 소요 시간 4시간 추가
       hours+=4;
       localStorage.setItem("hours", hours);
+      document.querySelector(".Hour").textContent = Number(hours%12)+":00";
+      document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
       localStorage.setItem("playerX", playerPos.x);
       localStorage.setItem("playerY", playerPos.y);
       localStorage.setItem("playerZ", playerPos.z);

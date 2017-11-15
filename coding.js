@@ -59,14 +59,18 @@ function onEnter(e){
       }
       // 서버에 sendCodingData값 전송 후 Coding 데이터에 값 추가하기
 
+      // 탁구 소요시간 3시간 추가
       hours+=3;
       localStorage.setItem("hours", hours);
+      document.querySelector(".Hour").textContent = Number(hours%12)+":00";
+      document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
       if((Math.floor(hours/12)+1)%3===0){
         window.location.href = "episode"+(Math.floor(hours/12)+1)/3+".html";
       }
       console.log(hours);
       resetGame();
       $(".codingActivity").css({"display": "none"})
+      location.reload();
     }
   }
 }

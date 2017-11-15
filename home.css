@@ -100,21 +100,36 @@ canvas{
   position: absolute;
   width: 200px;
   height: 100px;
-  background: #000000;
   top: 10px;
   left: 20px;
-  color: white;
+  color: black;
   font-size: 40px;
   text-align: center;
+  background-image: url("img/Date.png");
+  background-size: 100% 100%;
 }
 
 #Date > #dateText{
   position: absolute;
-  top: 20px;
+  top: 30px;
   left: 0;
   right: 0;
   margin-right: auto;
   margin-left: auto;
+}
+
+.Hour{
+  position: absolute;
+  top: 10px;
+  left: 250px;
+  font-size: 30px;
+  font-family: sans-serif;
+  background-image: url("img/hour.png");
+  background-size: 100% 100%;
+  width: 200px;
+  height: 100px;
+  text-align: center;
+  padding-top: 45px;
 }
 
 span{
