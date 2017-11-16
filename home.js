@@ -5,6 +5,13 @@ var mixers = [];
 var action;
 var actionStop = false;
 
+var statBarData = {
+  happiness: 80,
+  coding: 80,
+  dating: 80,
+  health: 80
+};
+
 var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
 var clickedPos = new THREE.Vector3(0, 0, 0);
@@ -13,6 +20,7 @@ var clickedPos = new THREE.Vector3(0, 0, 0);
 var playerPos = new THREE.Vector3(0, 4, 0);
 var firstVisit = true;
 var firstVisitTennis = true;
+var firstVisitTv = true;
 var codingStarted = false;
 
 var renderer, scene, camera, light, controls;
@@ -21,12 +29,14 @@ var loadManager;
 
 var fullPlayer = new THREE.Object3D();
 var playerColl;
+var tvColl;
 
 var speed = 0.5;
 var disX, disZ;
 var angle;
 var notebookClick = false;
 var tabletennisClick = false;
+var tvClick = false;
 
 var day=1;
 var hours=0;
@@ -67,6 +77,10 @@ var episodeCnt=1;
 
 var tableTennis;
 
+var onlyOnce=0;
+
+var sendHappinessData=0;
+
 // var disX=null, disZ=null;
 
 document.addEventListener('contextmenu', onMouseClick, false);
@@ -81,6 +95,11 @@ function init(){
   if(hours%12===0 && hours>0){
     day++;
     localStorage.setItem("day", day);
+    var minus = -16;
+    localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+minus);
+    localStorage.setItem("codingData", Number(localStorage.getItem("codingData"))+minus);
+    localStorage.setItem("happinessData", Number(localStorage.getItem("happinessData"))+minus);
+    localStorage.setItem("datingData", Number(localStorage.getItem("datingData"))+minus);
     $(".sleep").fadeIn("slow", function(){
       setTimeout(function(){
         $(".sleep").fadeOut("slow", function(){
@@ -89,6 +108,9 @@ function init(){
             playerColl.position.set(-20, 4, 0);
             fullPlayer.position.set(-20, 4, 0);
             clickedPos.set(-20, 4, 0);
+            localStorage.setItem("playerX", player.position.x);
+            localStorage.setItem("playerY", player.position.y);
+            localStorage.setItem("playerZ", player.position.z);
           }catch(e){
 
           }
@@ -114,6 +136,11 @@ function init(){
     if(hours%12===0 && hours>0){
       day++;
       localStorage.setItem("day", day);
+      var minus = -16;
+      localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+minus);
+      localStorage.setItem("codingData", Number(localStorage.getItem("codingData"))+minus);
+      localStorage.setItem("happinessData", Number(localStorage.getItem("happinessData"))+minus);
+      localStorage.setItem("datingData", Number(localStorage.getItem("datingData"))+minus);
       $(".sleep").fadeIn("slow", function(){
         setTimeout(function(){
           $(".sleep").fadeOut("slow", function(){
@@ -122,6 +149,9 @@ function init(){
               playerColl.position.set(-20, 4, 0);
               fullPlayer.position.set(-20, 4, 0);
               clickedPos.set(-20, 4, 0);
+              localStorage.setItem("playerX", player.position.x);
+              localStorage.setItem("playerY", player.position.y);
+              localStorage.setItem("playerZ", player.position.z);
             }catch(e){
 
             }
@@ -134,13 +164,25 @@ function init(){
     document.querySelector(".Hour").textContent = hours+":00";
     document.querySelector("#dateText").textContent="Day "+(day+1);
     if((day+1)%3===1){
-      window.location.href = "episode"+(day+1)%3+".html";
+      window.location.href = "episode"+(Number(day/3)+1)+".html";
     }
   }, 60000);
 
   // 서버로부터 플레이어의 스탯 가져오기
   // 서버로부터 데이터 받고 아래와 같이 스탯바에 적용
-  // $(".Coding>.gage").css({"width": codingStats+"px"});
+  statBarData.coding += Number(localStorage.getItem("codingData"));
+  statBarData.dating += Number(localStorage.getItem("datingData"));
+  statBarData.health += Number(localStorage.getItem("healthData"));
+  statBarData.happiness += Number(localStorage.getItem("happinessData"));
+  console.log(statBarData.coding);
+  console.log(statBarData.dating);
+  console.log(statBarData.health);
+  console.log(statBarData.happiness);
+
+  $(".Coding>.gage").css({"width": statBarData.coding+"px"});
+  $(".Health>.gage").css({"width": statBarData.health+"px"});
+  $(".Happiness>.gage").css({"width": statBarData.happiness+"px"});
+  $(".Dating>.gage").css({"width": statBarData.dating+"px"});
 
   // 렌더러 구현
   renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -577,9 +619,10 @@ function init(){
 
   var tvCollGeo = new THREE.BoxGeometry(80, 10, 30);
   var tvCollMat = new THREE.MeshPhongMaterial({color: 0xffffff, opacity:0.0, transparent:true});
-  var tvColl = new THREE.Mesh(tvCollGeo, tvCollMat);
+  tvColl = new THREE.Mesh(tvCollGeo, tvCollMat);
   tvColl.position.set(150, 0, 300);
   collidableMeshList.push(tvColl);
+  tvColl.name="tv";
   scene.add(tvColl);
 
   // 이동 처리
@@ -629,12 +672,12 @@ function render(){
             // a collision occurred... do something...
              console.log("충돌");
             //clickedPos.set(player.position.x, player.position.y, player.position.z);
-            player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-            player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
-            playerColl.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-            playerColl.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
-            fullPlayer.position.x -= Math.cos(angle * Math.PI/180)*speed*0.01;
-            fullPlayer.position.z -= Math.sin(angle * Math.PI/180)*speed*0.01;
+            player.position.x -= Math.cos(angle * Math.PI/180)*speed*0.05;
+            player.position.z -= Math.sin(angle * Math.PI/180)*speed*0.05;
+            playerColl.position.x -= Math.cos(angle * Math.PI/180)*speed*0.05;
+            playerColl.position.z -= Math.sin(angle * Math.PI/180)*speed*0.05;
+            fullPlayer.position.x -= Math.cos(angle * Math.PI/180)*speed*0.05;
+            fullPlayer.position.z -= Math.sin(angle * Math.PI/180)*speed*0.05;
             clickedPos.set(player.position.x, player.position.y, player.position.z);
         }
     }
@@ -740,21 +783,55 @@ function render(){
   // 탁구대와 가까워지면 페이지 이동
   try{
     if((tabletennisClick === true) && (playerPos.distanceTo(tableTennis.position) < 80) && (firstVisitTennis === true)){
-      firstVisitTennis = false;
-      // 탁구 소요 시간 4시간 추가
-      hours+=4;
-      if((hours/12) > 1){
-        hours = 12;
-      }
-      localStorage.setItem("hours", hours);
-      // document.querySelector(".Hour").textContent = hours+":00";
-      // document.querySelector("#dateText").textContent="Day "+(day+1);
-      localStorage.setItem("playerX", playerPos.x);
-      localStorage.setItem("playerY", playerPos.y);
-      localStorage.setItem("playerZ", playerPos.z);
-      window.location.href = "tableTennis.html";
+        firstVisitTennis = false;
+        // 탁구 소요 시간 4시간 추가
+        hours+=4;
+        if((hours/12) > 1){
+          hours = 12;
+        }
+        localStorage.setItem("hours", hours);
+        // document.querySelector(".Hour").textContent = hours+":00";
+        // document.querySelector("#dateText").textContent="Day "+(day+1);
+        localStorage.setItem("playerX", playerPos.x);
+        localStorage.setItem("playerY", playerPos.y);
+        localStorage.setItem("playerZ", playerPos.z);
+        window.location.href = "tableTennis.html";
     }else if(playerPos.distanceTo(tableTennis.position) >= 80){
       firstVisitTennis = true;
+    }
+  }catch(e){
+
+  }
+  try{
+    if((tvClick === true) && (playerPos.distanceTo(tvColl.position) < 80) && (firstVisitTv === true)){
+      onlyOnce++;
+      if(onlyOnce===1){
+        console.log(onlyOnce);
+        firstVisitTv = false;
+        clickedPos.set(player.position.x, player.position.y, player.position.z);
+        console.log("한번 출력");
+
+        $(".watch").css({"display": ""});
+        new moment.duration(1000).timer({wait: 5000, executeAfterWait: true}, function(){
+          $(".watch").css({"display": "none"});
+          console.log("Hi");
+        });
+
+        sendHappinessData += 10;
+        // 서버
+        statBarData.happiness+=sendHappinessData;
+        $(".Happiness>.gage").css({"width": statBarData.happiness+"px"});
+        localStorage.setItem("happinessData", sendHappinessData);
+
+        hours+=2;
+        if((hours/12) > 1){
+          hours = 0;
+          day++;
+        }
+      }
+    }else if(playerPos.distanceTo(tvColl.position) >= 80){
+      firstVisitTv = true;
+      onlyOnce=0;
     }
   }catch(e){
 
@@ -820,6 +897,7 @@ function onMouseClick(event){
     var intersects = camRaycaster.intersectObjects(scene.children);
     var isNote = false;
     var isTable = false;
+    var isTv = false;
 
     for ( var i = 0; i < intersects.length; i++ ) {
       console.log(intersects);
@@ -827,10 +905,16 @@ function onMouseClick(event){
       if(intersects[i].object.name === "notebook"){
         notebookClick = true;
         isNote = true;
-      }else if(intersects[i].object.name === "tabletennis"){
+      }
+      if(intersects[i].object.name === "tabletennis"){
         console.log("탁구 클릭");
         tabletennisClick = true;
         isTable = true;
+      }
+      if(intersects[i].object.name === "tv"){
+        console.log("티비 켜짐");
+        tvClick = true;
+        isTv = true;
       }
     }
     if(isNote === false){
@@ -838,6 +922,9 @@ function onMouseClick(event){
     }
     if(isTable === false){
       tabletennisClick = false;
+    }
+    if(isTv === false){
+      tvClick = false;
     }
 
     var lookVector = new THREE.Vector3();

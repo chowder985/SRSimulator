@@ -394,10 +394,12 @@
 
   <script type="text/javascript">
     var scene = 1;
+    var sendDatingData=0;
 
     function first(){
-      var sendDatingData = -48;
+      sendDatingData += -48;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene8").css({"display": "none"});
       $("#scene8-1").css({"display": ""});
@@ -410,9 +412,10 @@
     }
 
     function second(){
-      var sendDatingData = 16;
+      sendDatingData += 16;
 
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
 
       $("#scene8").css({"display": "none"});
@@ -429,8 +432,8 @@
 
 
     function third(){
-      var sendDatingData = 0;
-
+      sendDatingData += 0;
+      localStorage.setItem("datingData", sendDatingData);
       // 서버로 데이터 전송
 
 
@@ -456,7 +459,8 @@
 
     function fourth(){
 
-      var sendDatingData = 16;
+      sendDatingData += 16;
+      localStorage.setItem("datingData", sendDatingData);
 
       // 서버로 데이터 전송
 
@@ -486,8 +490,8 @@
 
     function fifth(){
 
-      var sendDatingData = 0;
-
+      sendDatingData += 0;
+      localStorage.setItem("datingData", sendDatingData);
       // 서버로 데이터 전송
 
 
@@ -515,9 +519,9 @@
 
 
     function sixth(){
-      var sendDatingData = -48;
+      sendDatingData += -48;
       // 서버로 데이터 전송
-
+      localStorage.setItem("datingData", sendDatingData);
 
 
       $("#scene22").css({"display": "none"});
@@ -544,8 +548,8 @@
 
     function seventh(){
 
-      var sendDatingData = -48;
-
+      sendDatingData += -48;
+      localStorage.setItem("datingData", sendDatingData);
       // 서버로 데이터 전송
 
 
@@ -574,8 +578,8 @@
 
     function eighth(){
 
-      var sendDatingData = 0;
-
+      sendDatingData += 0;
+      localStorage.setItem("datingData", sendDatingData);
       // 서버로 데이터 전송
 
 
@@ -604,8 +608,8 @@
 
     function nineth(){
 
-      var sendDatingData = 16;
-
+      sendDatingData += 16;
+      localStorage.setItem("datingData", sendDatingData);
       // 서버로 데이터 전송
 
 

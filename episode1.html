@@ -148,10 +148,12 @@
   </body>
   <script type="text/javascript">
     var scene = 1;
+    var sendDatingData=0;
 
     function first(){
-      var sendDatingData = -48;
+      sendDatingData += -48;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene13").css({"display": "none"});
       $("#scene13-1").css({"display": ""});
@@ -165,8 +167,9 @@
     }
 
     function second(){
-      var sendDatingData = 16;
+      sendDatingData += 16;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene13").css({"display": "none"});
       $("#scene13-2").css({"display": ""});
@@ -180,8 +183,9 @@
     }
 
     function third(){
-      var sendDatingData = 0;
+      sendDatingData += 0;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene13").css({"display": "none"});
       $("#scene13-3").css({"display": ""});
@@ -195,8 +199,9 @@
     }
 
     function fourth(){
-      var sendDatingData = -48;
+      sendDatingData += -48;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene15").css({"display": "none"});
       $("#scene15-1").css({"display": ""});
@@ -210,8 +215,9 @@
     }
 
     function fifth(){
-      var sendDatingData = 16;
+      sendDatingData += 16;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene15").css({"display": "none"});
       $("#scene15-2").css({"display": ""});
@@ -225,8 +231,9 @@
     }
 
     function sixth(){
-      var sendDatingData = 0;
+      sendDatingData += 0;
       // 서버로 데이터 전송
+      localStorage.setItem("datingData", sendDatingData);
 
       $("#scene15").css({"display": "none"});
       $("#scene15-3").css({"display": ""});

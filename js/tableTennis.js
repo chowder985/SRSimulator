@@ -316,14 +316,16 @@ function loop() {
           sendHealthData+=5;
         }
         // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
+        localStorage.setItem("healthData", sendHealthData);
 
         window.location.href = "home.html";
       }
       else if(aiplayerScore === 7){
         document.getElementById("scoreboard").textContent = "You Lose"
-        var sendHealthData=-10;
+        var sendHealthData=-16;
         // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
-        
+        localStorage.setItem("healthData", sendHealthData);
+
         window.location.href = "home.html";
       }
 

@@ -223,7 +223,20 @@ p{
 }
 
 .sleep{
+  position: absolute;
+  top: 0;
+  left: 0;
   background-image: url("img/sleep.jpeg");
+  width: 100%;
+  height: 100%;
+  background-size: 100% 100%;
+}
+
+.watch{
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: url("img/watchtv.jpeg");
   width: 100%;
   height: 100%;
   background-size: 100% 100%;

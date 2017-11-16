@@ -121,9 +121,11 @@
 
     <script type="text/javascript">
       var scene = 1;
+      var sendDatingData=0;
 
       function first(){
-        var sendDatingData = 16;
+        sendDatingData += 16;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene4").css({"display":"none"});
         $("#scene4-1").css({"display":""});
@@ -137,7 +139,8 @@
       }
 
       function second(){
-        var sendDatingData = -48;
+        sendDatingData += -48;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene4").css({"display":"none"});
         $("#scene4-2").css({"display":""});
@@ -151,7 +154,8 @@
       }
 
       function third(){
-        var sendDatingData = -48;
+        sendDatingData += -48;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene8").css({"display":"none"});
         $("#scene8-1").css({"display":""});
@@ -165,7 +169,8 @@
       }
 
       function fourth(){
-        var sendDatingData = 16;
+        sendDatingData += 16;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene8").css({"display":"none"});
         $("#scene8-2").css({"display":""});
@@ -179,7 +184,8 @@
       }
 
       function fifth(){
-        var sendDatingData = 16;
+        sendDatingData += 16;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene12").css({"display":"none"});
         $("#scene12-1").css({"display":""});
@@ -193,7 +199,8 @@
       }
 
       function sixth(){
-        var sendDatingData = -48;
+        sendDatingData += -48;
+        localStorage.setItem("datingData", sendDatingData);
 
         $("#scene12").css({"display":"none"});
         $("#scene12-2").css({"display":""});
