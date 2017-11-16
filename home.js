@@ -63,6 +63,7 @@ var elapse=0.0;
 var i=0;
 var numOfP=0;
 var count = null;
+var episodeCnt=1;
 
 var tableTennis;
 
@@ -77,16 +78,16 @@ function init(){
   console.log(hours);
   day = Number(localStorage.getItem("day"));
   console.log(day+1);
-  if(hours%12===0){
-    console.log();
+  if(hours%12===0 && hours>0){
+    day++;
     $(".sleep").fadeIn("slow", function(){
       setTimeout(function(){
         $(".sleep").fadeOut("slow", function(){
           try{
-            player.position.set(0, 4, 0);
-            playerColl.position.set(0, 0, 0);
-            fullPlayer.position.set(0, 0, 0);
-            clickedPos.set(0, 0, 0);
+            player.position.set(-20, 4, 0);
+            playerColl.position.set(-20, 4, 0);
+            fullPlayer.position.set(-20, 4, 0);
+            clickedPos.set(-20, 4, 0);
           }catch(e){
 
           }
@@ -99,8 +100,9 @@ function init(){
   document.querySelector(".Hour").textContent = hours+":00";
   document.querySelector("#dateText").textContent="Day "+(day+1);
   console.log(document.querySelector("#dateText").textContent);
-  if((day+1)%3===0){
-    window.location.href = "episode"+(day+1)/3+".html";
+  if((day+1)%3===1){
+    console.log((day+1)%3);
+    window.location.href = "episode"+(Number(day/3)+1)+".html";
   }
 
   // 1분이 지날때마다 한시간이 지나감
@@ -108,16 +110,16 @@ function init(){
     hours++;
     localStorage.setItem("hours", hours);
     console.log(hours);
-    if(hours%12===0){
+    if(hours%12===0 && hours>0){
       day++;
       $(".sleep").fadeIn("slow", function(){
         setTimeout(function(){
           $(".sleep").fadeOut("slow", function(){
             try{
-              player.position.set(0, 4, 0);
-              playerColl.position.set(0, 0, 0);
-              fullPlayer.position.set(0, 0, 0);
-              clickedPos.set(0, 0, 0);
+              player.position.set(-20, 4, 0);
+              playerColl.position.set(-20, 4, 0);
+              fullPlayer.position.set(-20, 4, 0);
+              clickedPos.set(-20, 4, 0);
             }catch(e){
 
             }
@@ -129,8 +131,8 @@ function init(){
     }
     document.querySelector(".Hour").textContent = hours+":00";
     document.querySelector("#dateText").textContent="Day "+(day+1);
-    if((day+1)%3===0){
-      window.location.href = "episode"+(day+1)/3+".html";
+    if((day+1)%3===1){
+      window.location.href = "episode"+(day+1)%3+".html";
     }
   }, 60000);
 
@@ -691,6 +693,7 @@ function render(){
       $(".codingStart").css({"display": ""})
       firstVisit = false;
       codingStarted = true;
+      clickedPos.set(player.position.x, player.position.y, player.position.z);
       // localStorage.setItem("playerX", playerPos.x);
       // localStorage.setItem("playerY", playerPos.y);
       // localStorage.setItem("playerZ", playerPos.z);
@@ -739,11 +742,9 @@ function render(){
       // 탁구 소요 시간 4시간 추가
       hours+=4;
       if((hours/12) > 1){
-        hours = 0;
-        day++;
+        hours = 12;
       }
       localStorage.setItem("hours", hours);
-      localStorage.setItem("day", day);
       // document.querySelector(".Hour").textContent = hours+":00";
       // document.querySelector("#dateText").textContent="Day "+(day+1);
       localStorage.setItem("playerX", playerPos.x);

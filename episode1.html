@@ -13,6 +13,7 @@
     <img id="ui" src="img/interactiveFiction.png">
     <span id="name">삼훈이</span>
     <span id="day">Day 1</span>
+    <button id="clickArea"></button>
     <span id="episode">Episode 1 - 첫 만남</span>
       <div id="scene1" class="content">
         <img src="episode1-image/0.JPG">
@@ -140,6 +141,10 @@
         <span id="text">뭐... 그렇다 하지</span>
       </div>
 
+      <div id="scene19" class="content" style="display: none">
+        <span id="text">그렇게.. 우리는 처음 만나게 되었다.</span>
+      </div>
+
   </body>
   <script type="text/javascript">
     var scene = 1;
@@ -150,7 +155,13 @@
 
       $("#scene13").css({"display": "none"});
       $("#scene13-1").css({"display": ""});
-      scene = 13;
+      scene=13;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
     function second(){
@@ -159,7 +170,13 @@
 
       $("#scene13").css({"display": "none"});
       $("#scene13-2").css({"display": ""});
-      scene = 13;
+      scene=13;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
     function third(){
@@ -168,7 +185,13 @@
 
       $("#scene13").css({"display": "none"});
       $("#scene13-3").css({"display": ""});
-      scene = 13;
+      scene=13;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
     function fourth(){
@@ -178,6 +201,12 @@
       $("#scene15").css({"display": "none"});
       $("#scene15-1").css({"display": ""});
       scene = 16;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
     function fifth(){
@@ -187,6 +216,12 @@
       $("#scene15").css({"display": "none"});
       $("#scene15-2").css({"display": ""});
       scene = 15;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
     function sixth(){
@@ -196,26 +231,46 @@
       $("#scene15").css({"display": "none"});
       $("#scene15-3").css({"display": ""});
       scene = 15;
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
     }
 
-    document.addEventListener("click", function(){
-      if(scene!==13 && scene!==15){
+    document.getElementById("clickArea").addEventListener("click", function(){
+      if(scene===12 || scene===14){
+        console.log(scene);
+        $("#clickArea").attr("disabled", true);
+      }else{
+        $("#clickArea").removeAttr("disabled");
+      }
         $("#scene13-1").css({"display": "none"});
         $("#scene13-2").css({"display": "none"});
         $("#scene13-3").css({"display": "none"});
         $("#scene15-1").css({"display": "none"});
         $("#scene15-2").css({"display": "none"});
         $("#scene15-3").css({"display": "none"});
-        console.log(scene);
         $("#scene"+scene).css({"display": "none"});
         scene++;
-        if(scene===12 || scene===13 || scene===15 || scene===17){
+        console.log(scene);
+        if(scene===12 || scene===13){
           $("#name").text("???");
+        }else if(scene===17 || scene===15){
+          $("#name").text("예진이");
         }else{
           $("#name").text("삼훈이");
         }
         $("#scene"+scene).css({"display": ""});
-      }
+        if(scene===20){
+          var day = 1;
+          var hours = 0;
+          localStorage.setItem("day", day);
+          localStorage.setItem("hours", hours);
+          window.location.href = "home.html";
+        }
     });
+
   </script>
 </html>
