@@ -85,6 +85,13 @@ html, body{
   font-size: 30px;
 }
 
+.select > button{
+  margin: 5px;
+  font-size: 25px;
+  background-color: steelblue;
+  border: none;
+}
+
 #scene13>#text{
   bottom: 80px;
 }

@@ -5,12 +5,32 @@ var mixers = [];
 var action;
 var actionStop = false;
 
-var statBarData = {
-  happiness: 80,
-  coding: 80,
-  dating: 80,
-  health: 80
+// var statBarData = {
+//   happiness: 80,
+//   coding: 80,
+//   dating: 80,
+//   health: 80
+// };
+
+var state = {
+  day: 1,
+  hours: 0,
+  statBarData: {
+    happiness: 80,
+    coding: 80,
+    dating: 80,
+    health: 80
+  }
 };
+
+function statusControl(stateFromServer){
+  state.day = stateFromServer.day;
+  state.hours = stateFromServer.hours;
+  state.statBarData.happiness = stateFromServer.statBarData.happiness;
+  state.statBarData.coding = stateFromServer.statBarData.coding;
+  state.statBarData.dating = stateFromServer.statBarData.dating;
+  state.statBarData.health = stateFromServer.statBarData.health;
+}
 
 var camRaycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(0, 0);
@@ -38,15 +58,12 @@ var notebookClick = false;
 var tabletennisClick = false;
 var tvClick = false;
 
-var day=1;
-var hours=0;
+// var day=1;
+// var hours=0;
 var startTime;
-var checkDayPast=0;
 
 var collidableMeshList = [];
 // var collided = false;
-
-var stats = initStats();
 
 // coding Game Variables
 var c = [
@@ -55,16 +72,41 @@ var c = [
   "for(i=1; i<=rows; ++i){",
   "for(j=1; j<=i; ++j){",
   "printf('*');}",
-  "printf(\"\\n\");"
+  "printf(\"\\n\");",
+  "int main(void){",
+  "#include <stdio.h>",
+  "return 0;"
 ];
 var java = [
-  "System.out.println('Hello World!');"
+  "System.out.println('Hello World!');",
+  "public static void main(String[] args){",
+  "Scanner sc = new Scanner(System.in)",
+  "InputStream is = new InputStream()",
+  "new Exam1();",
+  "super.num=1;",
+  "jsonObject.toString();",
+  "import java.util.Scanner;",
+  "extends AppCompat",
+  "implements AInterface{"
 ];
 var javascript = [
-  "for(var i=0; i<10; i++){"
+  "for(var i=0; i<10; i++){",
+  "object = {num: 2, num2: 3}",
+  "array = [1, 2, 3];",
+  "array.forEach(function(element){ })",
+  "window.location.href=\"google.com\"",
+  "setTimeout(function(){}, 1000)",
+  "setInterval(function(){}, 3000)"
 ];
-var html = [
-  "\<h1\>\<\/h1\>"
+var python = [
+  "if x < 0:",
+  "elif x == 1:",
+  "print('Zero')",
+  "for w in words:",
+  "if len(w) > 6:",
+  "for i in range(len(a)):",
+  "list(range(5))",
+  "def function(a):"
 ];
 var selectedLang;
 
@@ -82,19 +124,33 @@ var onlyOnce=0;
 var sendHappinessData=0;
 
 // var disX=null, disZ=null;
-
+var cnt=1;
 document.addEventListener('contextmenu', onMouseClick, false);
+document.addEventListener('keydown', function(event){
+  if(event.keyCode == 27){
+    if(cnt==1){
+      $(".logout-menu").css({"display": ""});
+      cnt*=-1;
+    }else{
+      $(".logout-menu").css({"display": "none"});
+      cnt*=-1;
+    }
+  }
+});
+$("#logout-btn").click(function(){
+  alert("log out!");
+});
 
 function init(){
   // 시간 개념
   // 새로 고침 했을 시 바로 업데이트
-  hours = Number(localStorage.getItem("hours"));
-  console.log(hours);
-  day = Number(localStorage.getItem("day"));
-  console.log(day+1);
-  if(hours%12===0 && hours>0){
-    day++;
-    localStorage.setItem("day", day);
+  state.hours = Number(localStorage.getItem("hours"));
+  console.log(state.hours);
+  state.day = Number(localStorage.getItem("day"));
+  console.log(state.day+1);
+  if(state.hours%12===0 && state.hours>0){
+    state.day++;
+    localStorage.setItem("day", state.day);
     var minus = -16;
     localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+minus);
     localStorage.setItem("codingData", Number(localStorage.getItem("codingData"))+minus);
@@ -117,25 +173,25 @@ function init(){
         });
       }, 1000);
     });
-    hours=0;
-    localStorage.setItem("hours", hours);
+    state.hours=0;
+    localStorage.setItem("hours", state.hours);
   }
-  document.querySelector(".Hour").textContent = hours+":00";
-  document.querySelector("#dateText").textContent="Day "+(day+1);
+  document.querySelector(".Hour").textContent = state.hours+":00";
+  document.querySelector("#dateText").textContent="Day "+(state.day+1);
   console.log(document.querySelector("#dateText").textContent);
-  if((day+1)%3===1){
-    console.log((day+1)%3);
-    window.location.href = "episode"+(Number(day/3)+1)+".html";
+  if((state.day+1)%3===1){
+    console.log((state.day+1)%3);
+    window.location.href = "episode"+(Number(state.day/3)+1)+".html";
   }
 
   // 1분이 지날때마다 한시간이 지나감
   startTime = setInterval(function(){
-    hours++;
-    localStorage.setItem("hours", hours);
-    console.log(hours);
-    if(hours%12===0 && hours>0){
-      day++;
-      localStorage.setItem("day", day);
+    state.hours++;
+    localStorage.setItem("hours", state.hours);
+    console.log(state.hours);
+    if(state.hours%12===0 && state.hours>0){
+      state.day++;
+      localStorage.setItem("day", state.day);
       var minus = -16;
       localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+minus);
       localStorage.setItem("codingData", Number(localStorage.getItem("codingData"))+minus);
@@ -158,31 +214,43 @@ function init(){
           });
         }, 1000);
       });
-      hours=0;
-      localStorage.setItem("hours", hours);
+      state.hours=0;
+      localStorage.setItem("hours", state.hours);
     }
-    document.querySelector(".Hour").textContent = hours+":00";
-    document.querySelector("#dateText").textContent="Day "+(day+1);
-    if((day+1)%3===1){
-      window.location.href = "episode"+(Number(day/3)+1)+".html";
+    document.querySelector(".Hour").textContent = state.hours+":00";
+    document.querySelector("#dateText").textContent="Day "+(state.day+1);
+    if((state.day+1)%3===1){
+      window.location.href = "episode"+(Number(state.day/3)+1)+".html";
     }
   }, 60000);
 
   // 서버로부터 플레이어의 스탯 가져오기
   // 서버로부터 데이터 받고 아래와 같이 스탯바에 적용
-  statBarData.coding += Number(localStorage.getItem("codingData"));
-  statBarData.dating += Number(localStorage.getItem("datingData"));
-  statBarData.health += Number(localStorage.getItem("healthData"));
-  statBarData.happiness += Number(localStorage.getItem("happinessData"));
-  console.log(statBarData.coding);
-  console.log(statBarData.dating);
-  console.log(statBarData.health);
-  console.log(statBarData.happiness);
+  state.statBarData.coding += Number(localStorage.getItem("codingData"));
+  state.statBarData.dating += Number(localStorage.getItem("datingData"));
+  state.statBarData.health += Number(localStorage.getItem("healthData"));
+  state.statBarData.happiness += Number(localStorage.getItem("happinessData"));
+  if(state.statBarData.coding <= 0){
+    window.location.href = "badEnding(Coding).html"
+  }else if(state.statBarData.dating <= 0){
+    window.location.href = "badEnding(Dating).html"
+  }else if(state.statBarData.health <= 0){
+    window.location.href = "badEnding(Health).html"
+  }else if(state.statBarData.happiness <= 0){
+    window.location.href = "badEnding(Happiness).html"
+  }
 
-  $(".Coding>.gage").css({"width": statBarData.coding+"px"});
-  $(".Health>.gage").css({"width": statBarData.health+"px"});
-  $(".Happiness>.gage").css({"width": statBarData.happiness+"px"});
-  $(".Dating>.gage").css({"width": statBarData.dating+"px"});
+  localStorage.setItem("realDatingData", state.statBarData.dating);
+
+  console.log(state.statBarData.coding);
+  console.log(state.statBarData.dating);
+  console.log(state.statBarData.health);
+  console.log(state.statBarData.happiness);
+
+  $(".Coding>.gage").css({"width": state.statBarData.coding+"px"});
+  $(".Health>.gage").css({"width": state.statBarData.health+"px"});
+  $(".Happiness>.gage").css({"width": state.statBarData.happiness+"px"});
+  $(".Dating>.gage").css({"width": state.statBarData.dating+"px"});
 
   // 렌더러 구현
   renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -638,7 +706,6 @@ function init(){
 }
 
 function render(){
-  stats.update();
 
   try{
     if(action.time >= 3.3){
@@ -765,9 +832,9 @@ function render(){
           loadGame();
         })
 
-        $("#HTML").click(function(){
-          html = shuffle(html);
-          selectedLang = html;
+        $("#Python").click(function(){
+          python = shuffle(python);
+          selectedLang = python;
           loadGame();
         })
       })
@@ -785,11 +852,11 @@ function render(){
     if((tabletennisClick === true) && (playerPos.distanceTo(tableTennis.position) < 80) && (firstVisitTennis === true)){
         firstVisitTennis = false;
         // 탁구 소요 시간 4시간 추가
-        hours+=4;
-        if((hours/12) > 1){
-          hours = 12;
+        state.hours+=4;
+        if((state.hours/12) > 1){
+          state.hours = 12;
         }
-        localStorage.setItem("hours", hours);
+        localStorage.setItem("hours", state.hours);
         // document.querySelector(".Hour").textContent = hours+":00";
         // document.querySelector("#dateText").textContent="Day "+(day+1);
         localStorage.setItem("playerX", playerPos.x);
@@ -809,7 +876,6 @@ function render(){
         console.log(onlyOnce);
         firstVisitTv = false;
         clickedPos.set(player.position.x, player.position.y, player.position.z);
-        console.log("한번 출력");
 
         $(".watch").css({"display": ""});
         new moment.duration(1000).timer({wait: 5000, executeAfterWait: true}, function(){
@@ -817,16 +883,23 @@ function render(){
           console.log("Hi");
         });
 
-        sendHappinessData += 10;
+        sendHappinessData += 16;
         // 서버
-        statBarData.happiness+=sendHappinessData;
-        $(".Happiness>.gage").css({"width": statBarData.happiness+"px"});
+        //state.statBarData.happiness+=sendHappinessData;
+        $(".Happiness>.gage").css({"width": state.statBarData.happiness+"px"});
         localStorage.setItem("happinessData", sendHappinessData);
 
-        hours+=2;
-        if((hours/12) > 1){
-          hours = 0;
-          day++;
+        state.hours+=2;
+        if((state.hours/12) > 1){
+          state.hours = 0;
+          state.day++;
+        }
+        localStorage.setItem("hours", state.hours);
+        localStorage.setItem("day", state.day);
+        document.querySelector(".Hour").textContent = state.hours+":00";
+        document.querySelector("#dateText").textContent="Day "+(state.day+1);
+        if((state.day+1)%3===1){
+          window.location.href = "episode"+(Number(state.day/3)+1)+".html";
         }
       }
     }else if(playerPos.distanceTo(tvColl.position) >= 80){

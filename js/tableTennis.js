@@ -305,7 +305,8 @@ function loop() {
       }
 
       if(userplayerScore === 7){
-        document.getElementById("scoreboard").textContent = "You Win!"
+        $("#message").css({"display": ""});
+        document.getElementById("message").textContent = "You Win!"
         var difScore = userplayerScore - aiplayerScore;
         var sendHealthData=0;
         if(difScore >= 6){
@@ -321,7 +322,8 @@ function loop() {
         window.location.href = "home.html";
       }
       else if(aiplayerScore === 7){
-        document.getElementById("scoreboard").textContent = "You Lose"
+        $("#message").css({"display": ""});
+        document.getElementById("message").textContent = "You Lose"
         var sendHealthData=-16;
         // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
         localStorage.setItem("healthData", sendHealthData);

@@ -1,0 +1,64 @@
+body, html{
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 100;
+}
+#scoreboard{
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  width: 200px;
+  height: 130px;
+  background-image: url("../img/scoreboard.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: #fff;
+  font-size: 50px;
+  font-family: sans-serif;
+}
+
+#aiplayer{
+  position: absolute;
+  padding-top: 30px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 100px;
+}
+
+#userplayer{
+  position: absolute;
+  padding-top: 30px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding-right: 100px;
+}
+
+#message{
+  position: absolute;
+  top:30px;
+  right:0;
+  left:0;
+  width: 200px;
+  height: 100px;
+  background: #000000;
+  color: white;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 30px;
+}

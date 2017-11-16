@@ -12,9 +12,9 @@
   <body>
     <img id="ui" src="img/interactiveFiction.png">
     <span id="name">삼훈이</span>
-    <span id="day">Day 1</span>
+    <span id="day">Day 10</span>
     <button id="clickArea"></button>
-    <span id="episode">Episode 1 - 첫 만남</span>
+    <span id="episode">Episode 4 - 고백</span>
 
     <div id="scene1" class="content">
       <img src="episode4-image/0.png">
@@ -263,7 +263,7 @@
     </div>
 
     <div id="scene37" class="content" style="display: none">
-      <img src="episode4-image/0.png">
+      <img src="episode4-image/6.png">
     </div>
 
     <script type="text/javascript">
@@ -415,8 +415,6 @@
         }else{
           $("#clickArea").removeAttr("disabled");
         }
-
-        window.location.href = "badEnding.html";
       }
 
       function eleventh(){
@@ -434,6 +432,9 @@
       }
 
       document.getElementById("clickArea").addEventListener("click", function(){
+        if(Number(localStorage.getItem("realDatingData"))-Number(localStorage.getItem("datingData")) <= 0){
+          window.location.href = "badEnding(Dating).html";
+        }
         if(scene===4 || scene===6 || scene===34){
           console.log(scene);
           $("#clickArea").attr("disabled", true);
@@ -464,7 +465,7 @@
           if(scene===38){
             var hours = 12;
             localStorage.setItem("hours", hours);
-            window.location.href = "home.html";
+            window.location.href = "login.html";
           }
       });
     </script>

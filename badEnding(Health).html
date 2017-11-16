@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Bad Ending</title>
+    <link rel="stylesheet" href="interactiveFiction.css">
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <img id="ui" src="img/interactiveFiction.png">
+    <span id="name">삼훈이</span>
+    <span id="day"></span>
+    <button id="clickArea"></button>
+    <span id="episode">삼훈이의 죽음</span>
+
+    <div id="scene1" class="content">
+      <span id="text">삼훈이는 체력을 관리하지 못하고 허약해져서 죽었습니다!..ㅠㅠ</span>
+    </div>
+
+    <script type="text/javascript">
+      document.getElementById("clickArea").addEventListener("click", function(){
+        localStorage.clear();
+        window.location.href="login.html";
+      });
+    </script>
+  </body>
+</html>

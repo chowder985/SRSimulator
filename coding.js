@@ -65,11 +65,11 @@ function onEnter(e){
       localStorage.setItem("codingData", sendCodingData);
 
       // 탁구 소요시간 3시간 추가
-      hours+=3;
-      if((hours/12) > 1){
-        hours = 12;
+      state.hours+=3;
+      if((state.hours/12) > 1){
+        state.hours = 12;
       }
-      localStorage.setItem("hours", hours);
+      localStorage.setItem("hours", state.hours);
       // document.querySelector(".Hour").textContent = Number(hours%12)+":00";
       // document.querySelector("#dateText").textContent="Day "+Number(Math.floor(hours/12)+1);
       //console.log(hours);
