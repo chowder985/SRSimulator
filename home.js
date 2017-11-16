@@ -80,6 +80,7 @@ function init(){
   console.log(day+1);
   if(hours%12===0 && hours>0){
     day++;
+    localStorage.setItem("day", day);
     $(".sleep").fadeIn("slow", function(){
       setTimeout(function(){
         $(".sleep").fadeOut("slow", function(){
@@ -112,6 +113,7 @@ function init(){
     console.log(hours);
     if(hours%12===0 && hours>0){
       day++;
+      localStorage.setItem("day", day);
       $(".sleep").fadeIn("slow", function(){
         setTimeout(function(){
           $(".sleep").fadeOut("slow", function(){

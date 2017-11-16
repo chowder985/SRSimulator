@@ -21,8 +21,219 @@
     </div>
 
     <div id="scene2" class="content" style="display:none">
+      <img src="episode2-image/0.JPG">
+      <span id="text">(어디.. 남는자리가..)</span>
+    </div>
+
+    <div id="scene3" class="content" style="display:none">
+      <img src="episode2-image/1.png">
+      <span id="text">아니 너가 왜 거기에 있어...</span>
+    </div>
+
+    <div id="scene4" class="content" style="display:none">
+      <img src="episode2-image/1.png">
+      <span id="text">왜? 나는 여기있으면 안되냐??</span>
+      <div class="select">
+        <button id="1" onclick="first()">1) 응 안돼</button>
+        <button id="2" onclick="second()">2) 아니 뭐....</button>
+      </div>
+    </div>
+
+    <div id="scene4-1" class="content" style="display:none">
+      <img src="episode2-image/1.png">
+      <span id="text">튕기는 척 하긴 ㅋ</span>
+    </div>
+    <div id="scene4-2" class="content" style="display:none">
+      <img src="episode2-image/1.png">
       <span id="text"></span>
     </div>
 
+    <div id="scene5" class="content" style="display:none">
+      <img src="episode2-image/2.png">
+      <span id="text">그나저나 자리가 없네...  야! 니 옆에 앉는다.</span>
+    </div>
+
+    <div id="scene6" class="content" style="display:none">
+      <img src="episode2-image/2.png">
+      <span id="text">뭐야 관심있어?? 왜이래?</span>
+    </div>
+
+    <div id="scene7" class="content" style="display:none">
+      <img src="episode2-image/2.png">
+      <span id="text">됐다..너랑 말 안할거야</span>
+    </div>
+
+    <div id="scene8" class="content" style="display:none">
+      <img src="episode2-image/3.png">
+      <span id="text">여기 오류나는데 왜이럼?</span>
+      <div class="select">
+        <button id="3" onclick="third()">1) 어디 봐봐!</button>
+        <button id="4" onclick="fourth()">2) 그런 것쯤은 알아서 찾아봐</button>
+      </div>
+    </div>
+
+    <div id="scene8-1" class="content" style="display:none">
+      <img src="episode2-image/4.png">
+      <span id="text">어... 고마워..</span>
+    </div>
+    <div id="scene8-2" class="content" style="display:none">
+      <img src="episode2-image/3.png">
+      <span id="text">왜 이렇게 까칠하게 굴어! 오류 하나 찾아줄때마다 학교에서 픽크닉 하나씩 사준다!</span>
+    </div>
+
+    <div id="scene9" class="content" style="display:none">
+      <img src="episode2-image/4.png">
+      <span id="text">하아.. 어쩔 수 없지</span>
+    </div>
+
+    <div id="scene10" class="content" style="display:none">
+      <img src="episode2-image/5.png">
+      <span id="text">으아~~~! 과제 다 끝냈다~!! 배고프다... 어디 가서 뭐라도 먹자!</span>
+    </div>
+
+    <div id="scene11" class="content" style="display:none">
+      <img src="episode2-image/5.png">
+      <span id="text">나 돈없어 니 친구들 끼리 먹어</span>
+    </div>
+
+    <div id="scene12" class="content" style="display:none">
+      <img src="episode2-image/5.png">
+      <span id="text">응? 나 오늘 혼자 왔는데?</span>
+      <div class="select">
+        <button id="5" onclick="fifth()">1) 그럼 혼자 먹던가</button>
+        <button id="6" onclick="sixth()">2) 그럼 같이 먹을까?</button>
+      </div>
+    </div>
+
+    <div id="scene12-1" class="content" style="display:none">
+      <img src="episode2-image/5.png">
+      <span id="text">됐다!! 누나가 인심쓴다! 사줄테니까 따라와~!</span>
+    </div>
+    <div id="scene12-2" class="content" style="display:none">
+      <img src="episode2-image/5.png">
+      <span id="text"></span>
+    </div>
+
+    <div id="scene13" class="content" style="display:none">
+      <img src="episode2-image/6.png">
+      <span id="text"></span>
+    </div>
+
+    <script type="text/javascript">
+      var scene = 1;
+
+      function first(){
+        var sendDatingData = 16;
+
+        $("#scene4").css({"display":"none"});
+        $("#scene4-1").css({"display":""});
+        scene = 4;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      function second(){
+        var sendDatingData = -48;
+
+        $("#scene4").css({"display":"none"});
+        $("#scene4-2").css({"display":""});
+        scene=4;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      function third(){
+        var sendDatingData = -48;
+
+        $("#scene8").css({"display":"none"});
+        $("#scene8-1").css({"display":""});
+        scene=9;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      function fourth(){
+        var sendDatingData = 16;
+
+        $("#scene8").css({"display":"none"});
+        $("#scene8-2").css({"display":""});
+        scene=8;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      function fifth(){
+        var sendDatingData = 16;
+
+        $("#scene12").css({"display":"none"});
+        $("#scene12-1").css({"display":""});
+        scene=12;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      function sixth(){
+        var sendDatingData = -48;
+
+        $("#scene12").css({"display":"none"});
+        $("#scene12-2").css({"display":""});
+        scene=12;
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+      }
+
+      document.getElementById("clickArea").addEventListener("click", function(){
+        if(scene===3 || scene===7 || scene===11){
+          console.log(scene);
+          $("#clickArea").attr("disabled", true);
+        }else{
+          $("#clickArea").removeAttr("disabled");
+        }
+          $("#scene4-1").css({"display": "none"});
+          $("#scene4-2").css({"display":"none"});
+          $("#scene8-1").css({"display":"none"});
+          $("#scene8-2").css({"display":"none"});
+          $("#scene12-1").css({"display":"none"});
+          $("#scene12-2").css({"display":"none"});
+          $("#scene"+scene).css({"display": "none"});
+          scene++;
+          console.log(scene);
+          if(scene===4 || scene===6 || scene===8 || scene===10 || scene===12){
+            $("#name").text("예진이");
+          }else{
+            $("#name").text("삼훈이");
+          }
+          $("#scene"+scene).css({"display": ""});
+          if(scene===14){
+            var hours = 12;
+            localStorage.setItem("hours", hours);
+            window.location.href = "home.html";
+          }
+      });
+    </script>
   </body>
 </html>
