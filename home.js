@@ -5,13 +5,6 @@ var mixers = [];
 var action;
 var actionStop = false;
 
-// var statBarData = {
-//   happiness: 80,
-//   coding: 80,
-//   dating: 80,
-//   health: 80
-// };
-
 var state = {
   day: 1,
   hours: 0,
@@ -25,7 +18,9 @@ var state = {
 
 function statusControl(stateFromServer){
   state.day = stateFromServer.day;
+  localStorage.setItem("day", state.day);
   state.hours = stateFromServer.hours;
+  localStorage.setItem("hours", state.hours);
   state.statBarData.happiness = stateFromServer.statBarData.happiness;
   state.statBarData.coding = stateFromServer.statBarData.coding;
   state.statBarData.dating = stateFromServer.statBarData.dating;
@@ -121,7 +116,7 @@ var tableTennis;
 
 var onlyOnce=0;
 
-var sendHappinessData=0;
+var clickPoint;
 
 // var disX=null, disZ=null;
 var cnt=1;
@@ -175,6 +170,7 @@ function init(){
     });
     state.hours=0;
     localStorage.setItem("hours", state.hours);
+    window.location.href = "home.html";
   }
   document.querySelector(".Hour").textContent = state.hours+":00";
   document.querySelector("#dateText").textContent="Day "+(state.day+1);
@@ -216,6 +212,7 @@ function init(){
       });
       state.hours=0;
       localStorage.setItem("hours", state.hours);
+      window.location.href="home.html";
     }
     document.querySelector(".Hour").textContent = state.hours+":00";
     document.querySelector("#dateText").textContent="Day "+(state.day+1);
@@ -315,41 +312,8 @@ function init(){
   //camera.lookAt(plane.position);
   scene.add(plane);
 
-  // 빛 구현
-  // light = new THREE.SpotLight(0xffffff);
-  // light.position.set(0, 100, 200);
-  // light.castShadow = true;
-  //
-  // light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 0.1, 10000 ) );
-  // light.shadow.bias = 0.0001;
-  //
-  // light.shadow.mapSize.width = 2048;
-  // light.shadow.mapSize.height = 2048;
-  //
-  // light.shadow.camera.visible = true;
-  //
-  // scene.add(light);
-
   var ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
   scene.add(ambientLight);
-
-  // light = new THREE.PointLight(0xffffff, 0.5, 10000);
-  // light.position.set(0, 100, 200);
-  // light.castShadow = true;
-  // light.shadow.camera.near = 0.1;
-  // light.shadow.camera.far = 10000;
-  // scene.add(light);
-
-  // light = new THREE.DirectionalLight(0xffffff, 0.5);
-  // light.position.set(0, 400, 200);
-  // light.castShadow = true;
-  // light.shadow.darkness = 0.8;
-  // light.shadow.camera.near = 200;
-  // light.shadow.camera.far = 1600;
-  // light.shadowCameraLeft = -300;
-  // light.shadowCameraBottom =  -400;
-  // light.shadowCameraRight = 500;
-  // light.shadowCameraTop = 500;
 
   light = new THREE.SpotLight( 0xffffff, 0.5 );
 	light.position.set(0, 400, 200);
@@ -869,6 +833,8 @@ function render(){
   }catch(e){
 
   }
+
+  // tv와 근접하면 실행
   try{
     if((tvClick === true) && (playerPos.distanceTo(tvColl.position) < 80) && (firstVisitTv === true)){
       onlyOnce++;
@@ -883,14 +849,14 @@ function render(){
           console.log("Hi");
         });
 
-        sendHappinessData += 16;
+        var sendHappinessData = 16;
         // 서버
-        //state.statBarData.happiness+=sendHappinessData;
+        state.statBarData.happiness+=sendHappinessData;
         $(".Happiness>.gage").css({"width": state.statBarData.happiness+"px"});
         localStorage.setItem("happinessData", sendHappinessData);
 
         state.hours+=2;
-        if((state.hours/12) > 1){
+        if((state.hours/12) >= 1){
           state.hours = 0;
           state.day++;
         }
@@ -914,6 +880,7 @@ function render(){
   renderer.render(scene, camera);
 }
 
+// 코딩 배열 섞는 메소드
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
   while (0 !== currentIndex) {
@@ -927,6 +894,7 @@ function shuffle(array) {
   return array;
 }
 
+// 코딩게임 로드
 function loadGame(){
   $(".codingSelect").css({"display": "none"})
   $(".codingActivity").css({"display": ""})
@@ -940,23 +908,6 @@ function loadGame(){
     countDown--;
   }, 1000);
 }
-
-// 알빠 아님
-function initStats() {
-    var stats = new Stats();
-
-    stats.setMode(0); // 0: fps, 1: ms
-
-    // Align top-left
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.left = '0px';
-    stats.domElement.style.top = '0px';
-
-    document.getElementById("Stats-output").appendChild(stats.domElement);
-
-    return stats;
-}
-
 // 마우스 클릭 좌표 구함
 function onMouseClick(event){
   action.reset();

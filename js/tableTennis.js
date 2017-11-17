@@ -1,163 +1,134 @@
 var camera;
 var scene;
 var webGLRenderer;
-
-var delta
-var time;
-var oldTime;
-
-var mouseX = 0;
-var mouseY = 0;
-
-var mouseXpercent = 0;
-var mouseYpercent = 0;
-
+var d;
+var t;
+var ot;
+var mousx = 0;
+var mousy = 0;
+var mousxPer = 0;
+var mousyPer = 0;
 var mouse = new THREE.Vector2();
+var camTarg = new THREE.Vector3(0,40,0);
+var player;
+var playerChild;
+var playerRobot;
+var playerRobotChild;
 
-var cameraTarget = new THREE.Vector3(0,40,0);
-var paddle;
-var paddleChild;
-var paddleAI;
-var paddleChildAI;
-var hitMesh;
-var paddleTarget = new THREE.Vector3();
-var paddleTargetAI = new THREE.Vector3();
-var paddleBehaviour = { divider: 3, spinx: 0, spiny: 0 };
-var ballBehaviour = { spinx: 0, spiny: 0 };
-
-var ball;
-var ballRadius = 0.6;
-var shadow;
-var shadowMaterial;
+var hitMes;
+var playerTarg = new THREE.Vector3();
+var playerTargRobot = new THREE.Vector3();
+var playerBeh = { div: 3, spinX: 0, spinY: 0 };
+var ballBeh = { spinX: 0, spinY: 0 };
 var lastHit = 0;
 var initHit = 0;
-var hitPosition = new THREE.Vector3();
+var ball;
+var ballRad = 0.6;
+var shadow;
+var shadowMat;
+var hitPos = new THREE.Vector3();
 var initX = 0;
-var hitX = 0;
-var hitY = 0;
+var hit = {x:0, y:0};
 var hitting = false;
-var hitComplete = true;
+var hitComp = true;
 var ballInactive = false;
-var hitTimeAI = 0;
+var hitTimeRobot = 0;
 var lastTableHit = 0;
+var inactiveCnt = 0;
+var bound = {left:32, right:-32, top:56.3, bottom:-56.3, table:33.2+ballRad, floor:0+ballRad, net: 39.2, netleft: 35.2, netright: -35.2};
 
-var inactiveCounter = 0;
-
-var bound = {left:32, right:-32, top:56.3, bottom:-56.3, table:33.2+ballRadius, floor:0+ballRadius, net: 39.2, netleft: 35.2, netright: -35.2};
-
-var vx = 0;
-var vz = 0;
-var vy = 0;
-var gravity = 0.040;
-
-var touchDevice = false;
-//var sizeRatio = 1;
+var speed = {
+  vx: 0,
+  vz: 0,
+  vy: 0
+};
+var gravity = 0.04;
 
 var userplayerScore=0;
 var aiplayerScore=0;
 var hitTable = false;
 
-document.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-document.addEventListener( 'mousedown', function ( event ) { event.preventDefault(); }, false );
-//document.addEventListener( 'touchstart', function ( event ) { event.preventDefault(); }, false );
-document.addEventListener('mousemove', onDocumentMouseMove, false);
-//document.addEventListener( 'touchmove', onTouchMove, false );
+document.addEventListener('contextmenu', function ( e ) { e.preventDefault(); }, false );
+document.addEventListener('mousedown', function ( e ) { e.preventDefault(); }, false );
+document.addEventListener('mousemove', onMouseMove, false);
 
 init();
 
 function init() {
+  webGLRenderer = new THREE.WebGLRenderer( { antialias: true } );
+  webGLRenderer.setSize( window.innerWidth, window.innerHeight );
+  webGLRenderer.setClearColor(0xDDDDDD, 1);
+
+  webGLRenderer.shadowMap.enabled = true;
+  webGLRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  document.body.appendChild(webGLRenderer.domElement);
+
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 700 );
   camera.position.set(0,50,-112);
   scene.add(camera);
 
-  var controls = new THREE.OrbitControls( camera );
-  controls.enableKeys = false;
-  controls.enableZoom = false;
-  controls.enablePan = false;
-  controls.maxPolarAngle = Math.PI*0.5;
-
   window.addEventListener( 'resize', onWindowResize, false );
 
   // 바닥
-  var floorTexture = new THREE.TextureLoader().load("img/floor.jpg");
+  var floorTexture = new THREE.TextureLoader().load("wildtextures-clean-plywood-plate.jpg");
   var floorGeometry = new THREE.PlaneGeometry(400,1000);
   var floorMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, map: floorTexture } );
   floorMaterial.map.offset.set(0, 0);
   floorMaterial.map.repeat.set(4, 12);
   floorMaterial.map.wrapS = THREE.RepeatWrapping;
   floorMaterial.map.wrapT = THREE.RepeatWrapping;
-
   var floor = new THREE.Mesh( floorGeometry, floorMaterial );
   floor.rotation.x = -Math.PI/2;
   floor.castShadow = true;
   floor.receiveShadow = true;
-  floor.renderDepth = 1;
-  floor.depthTest = false;
-  floor.matrixAutoUpdate = false;
-  floor.updateMatrix();
   scene.add(floor);
   console.log("Made the floor");
 
   // 라켓이 움직일 바닥
   var hitPlane = new THREE.PlaneGeometry(100,100);
-  hitMesh = new THREE.Mesh(hitPlane, new THREE.MeshBasicMaterial({color: 0xfff, transparent: true, opacity: 0.0})); //, transparent: true, opacity: 0.0
-  hitMesh.rotation.x = -Math.PI/2-0.5;
-  hitMesh.position.y = 36;
-  hitMesh.position.z = -65;
-  hitMesh.visible = true;
-  scene.add(hitMesh);
+  hitMes = new THREE.Mesh(hitPlane, new THREE.MeshBasicMaterial({color: 0xfff, transparent: true, opacity: 0.0})); //, transparent: true, opacity: 0.0
+  hitMes.rotation.x = -Math.PI/2-0.5;
+  hitMes.position.y = 36;
+  hitMes.position.z = -65;
+  scene.add(hitMes);
 
   // 플레이어 라켓
-  paddle = new THREE.Object3D();
-  scene.add(paddle);
+  player = new THREE.Object3D();
+  scene.add(player);
 
   // 로봇 라켓
-  paddleAI = new THREE.Object3D();
-  paddleAI.position.set(16,42,bound.top+15);
-  scene.add(paddleAI);
+  playerRobot = new THREE.Object3D();
+  playerRobot.position.set(16,42,bound.top+15);
+  scene.add(playerRobot);
 
   // 탁구공
-  var ballGeomertry = new THREE.SphereGeometry(ballRadius,24,16);
-  var material = new THREE.MeshLambertMaterial( { color: 0x666666, map: new THREE.TextureLoader().load( "img/ball2.jpg") } );
-  ball = new THREE.Mesh( ballGeomertry, material );
+  var ballGeomertry = new THREE.SphereGeometry(ballRad,24,16);
+  var ballMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff } );
+  ball = new THREE.Mesh( ballGeomertry, ballMaterial );
   ball.position.set(0,50,0);
-
-  ball.rotation.y = Math.PI/2;
   ball.castShadow = true;
   ball.receiveShadow = false;
   scene.add(ball);
 
-  // 그림자
-  var shadowPlane = new THREE.PlaneGeometry(2.2,2.2);
-  shadowMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: new THREE.TextureLoader().load( "img/shadow.png"), transparent: true } );
-  shadow = new THREE.Mesh( shadowPlane, shadowMaterial );
-  shadow.depthTest = false;
-  shadow.position.set(0,bound.table-ballRadius+0.05,0);
-  scene.add(shadow);
-
   // 빛
-  var ambient = new THREE.AmbientLight( 0xffffff );
-  scene.add( ambient );
+  var ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 );
+  scene.add( ambientLight );
 
-  var pointLight = new THREE.PointLight( 0xf0e7c8, 0.9 );
+  var pointLight = new THREE.PointLight( 0xffffff, 0.8 );
   pointLight.position.set(40,70,-130);
   scene.add( pointLight );
 
-  var light = new THREE.SpotLight( 0xffffff, 0.8 );
+  var light = new THREE.SpotLight( 0xffffff, 0.5 );
   light.position.set( 10, 100, -30 );
   light.target.position.set( 0, 0, 20 );
   light.target.updateMatrixWorld();
-
   light.castShadow = true;
-
-  light.shadow.camera.near = 40;
-  light.shadow.camera.far = 200;
+  light.shadow.camera.near = 10;
+  light.shadow.camera.far = 300;
   light.shadow.camera.fov = 60;
-
-  light.shadow.darkness = 0.85;
-
   light.shadow.mapSize.width = 1024;
   light.shadow.mapSize.height = 1024;
   scene.add( light );
@@ -180,18 +151,18 @@ function init() {
   var loader = new THREE.FBXLoader(loadManager);
   loader.load( "models/pr.fbx", function(object){
     console.log("Loaded racketAI");
-    paddleChildAI = object;
-    paddleChildAI.rotation.y = -Math.PI/2;
-    paddleChildAI.scale.set(0.4,0.4,0.4);
-    paddleAI.add(paddleChildAI);
+    playerRobotChild = object;
+    playerRobotChild.rotation.y = -Math.PI/2;
+    playerRobotChild.scale.set(0.4,0.4,0.4);
+    playerRobot.add(playerRobotChild);
   }, onProgress, onError);
 
   loader.load( "models/pr.fbx", function(object){
     console.log("Loaded racket");
-    paddleChild = object;
-    paddleChild.rotation.y = -Math.PI/2;
-    paddleChild.scale.set(0.4,0.4,0.4);
-    paddle.add(paddleChild);
+    playerChild = object;
+    playerChild.rotation.y = -Math.PI/2;
+    playerChild.scale.set(0.4,0.4,0.4);
+    player.add(playerChild);
   }, onProgress, onError);
 
   loader.load( "models/pingpongtable.fbx", function(object){
@@ -225,81 +196,70 @@ function init() {
     scene.add(table);
   }, onProgress, onError);
 
-  webGLRenderer = new THREE.WebGLRenderer( { scene: scene, clearColor: 0xDDDDDD, clearAlpha: 1.0, antialias: true } );
-  webGLRenderer.setSize( window.innerWidth, window.innerHeight );
-  webGLRenderer.setClearColor(0xDDDDDD, 1);
-
-  webGLRenderer.shadowMap.enabled = true;
-  webGLRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-  document.body.appendChild(webGLRenderer.domElement);
-
-  respawnBall();
+  makeBall();
   animate();
 }
 
-function respawnBall() {
+function makeBall() {
   ball.position.set(0,50,0);
-  vx = -0.25;
-  vz = -1.35;
-  vy = 0;
-
-  ballBehaviour.spinx *= 0.5;
-  paddleBehaviour.spinx *= 0.5;
-
+  speed.vx = -0.20;
+  speed.vz = -1.30;
+  speed.vy = 0;
+  ballBeh.spinX *= 0.5;
+  playerBeh.spinX *= 0.5;
   ballInactive = false;
-  inactiveCounter = 0;
+  inactiveCnt = 0;
 }
 
 // 마우스의 위치 받아오기
-function onDocumentMouseMove(event) {
+function onMouseMove(e) {
   var windowHalfX = window.innerWidth >> 1;
   var windowHalfY = window.innerHeight >> 1;
-
-  mouseX = ( event.clientX - windowHalfX );
-  mouseY = ( event.clientY - windowHalfY );
-
-  mouseXpercent = mouseX/(window.innerWidth/2);
-  mouseYpercent = mouseY/(window.innerHeight/2);
-
-  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  mousx = (e.clientX - windowHalfX);
+  mousy = (e.clientY - windowHalfY);
+  mousxPer = mousx/(window.innerWidth/2);
+  mousyPer = mousy/(window.innerHeight/2);
+  mouse.x = (e.clientX / window.innerWidth)*2-1;
+  mouse.y = -(e.clientY / window.innerHeight)*2+1;
 
   // 마우스 커서 없애기
-  if (mouseYpercent <= -0.75 && document.querySelector("canvas").style.cursor != "default") {
+  if (mousyPer <= -0.75 && document.querySelector("canvas").style.cursor != "default") {
     document.querySelector("canvas").style.cursor = "default";
-  } else if (mouseYpercent > -0.75 && document.querySelector("canvas").style.cursor != "none") {
+  } else if (mousyPer > -0.75 && document.querySelector("canvas").style.cursor != "none") {
     document.querySelector("canvas").style.cursor = "none";
   }
 }
 
 function animate() {
-  loop();
+  render();
   requestAnimationFrame( animate );
 }
 
-function loop() {
-  time = new Date().getTime();
-  delta = time - oldTime;
-  oldTime = time;
+function render() {
+  // 시간
+  t = new Date().getTime();
+  d = t - ot;
+  ot = t;
 
-  if (isNaN(delta) || delta > 1000 || delta == 0 ) {
-		delta = 1000/60;
+  // 시간 계산
+  if (isNaN(d) || d > 1000 || d == 0 ) {
+		d = 1000/60;
 	}
 
+  // 공의 움직임이 없어짐, 게임이 끝나게된다.
   if (ballInactive) {
-    ++inactiveCounter;
-    if (inactiveCounter >= 75) {
-      if(ball.position.z > 0 && hitTable === true){
+    ++inactiveCnt;
+    if (inactiveCnt >= 75) {
+      if(ball.position.z>0 && hitTable===true){
         userplayerScore++;
         document.getElementById("userplayer").textContent = userplayerScore;
-      }else if(ball.position.z < 0 && hitTable === true){
+      }else if(ball.position.z<0 && hitTable===true){
         aiplayerScore++;
         document.getElementById("aiplayer").textContent = aiplayerScore;
-      }else if(ball.position.z > 0 && hitTable === false){
+      }else if(ball.position.z>0 && hitTable===false){
         aiplayerScore++;
         document.getElementById("aiplayer").textContent = aiplayerScore;
-      }else if(ball.position.z < 0 && hitTable === false){
+      }else if(ball.position.z<0 && hitTable===false){
         userplayerScore++;
         document.getElementById("userplayer").textContent = userplayerScore;
       }
@@ -316,7 +276,6 @@ function loop() {
         }else{
           sendHealthData+=5;
         }
-        // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
         localStorage.setItem("healthData", sendHealthData);
 
         window.location.href = "home.html";
@@ -331,251 +290,198 @@ function loop() {
         window.location.href = "home.html";
       }
 
-      respawnBall();
+      makeBall();
     }
   }
 
   // 공과 라켓의 충돌
-  var normal = new THREE.Vector3();
-
-  normal.subVectors( ball.position, paddle.position );
-  var distance = normal.lengthSq();
-  var dify = Math.abs(ball.position.y - paddle.position.y);
-
-  if ((distance < 15 || time > initHit+200) && hitting) {
-
-    paddleBehaviour.spinx = ((mouseX - hitX)*-1)/200;
-    paddleBehaviour.spiny = ((mouseY - hitY)*-1)/200;
-
-
-    if (paddleBehaviour.spinx > 2) paddleBehaviour.spinx = 2;
-    if (paddleBehaviour.spinx < -2) paddleBehaviour.spinx = -2;
-
-    if (paddleBehaviour.spiny > 1.5) paddleBehaviour.spiny = 1.5;
-    if (paddleBehaviour.spiny < -1.5) paddleBehaviour.spiny = -1.5;
-
-    ballBehaviour.spinx = paddleBehaviour.spinx;
-
-    vz = 2.2 + ( Math.abs(paddleBehaviour.spiny+paddleBehaviour.spinx)/4 ) + Math.abs(ball.position.z)/500;
-    vy = Math.max(0.3, 0.9-(ball.position.y/100) );
-    vx = ( (-ball.position.x-initX)/50 ) - paddleBehaviour.spinx/300;
-
+  var temp = new THREE.Vector3();
+  temp.subVectors(ball.position, player.position);
+  var distance = temp.lengthSq();
+  var diffY = Math.abs(ball.position.y - player.position.y);
+  if ((distance < 15 || t > initHit+200) && hitting) {
+    playerBeh.spinX = ((mousx - hit.x)*-1)/200;
+    playerBeh.spinY = ((mousy - hit.y)*-1)/200;
+    if (playerBeh.spinX > 2)
+      playerBeh.spinX = 2;
+    if (playerBeh.spinX < -2)
+      playerBeh.spinX = -2;
+    if (playerBeh.spinY > 1.5)
+      playerBeh.spinY = 1.5;
+    if (playerBeh.spinY < -1.5)
+      playerBeh.spinY = -1.5;
+    ballBeh.spinX = playerBeh.spinX;
+    speed.vz = 2.2 + (Math.abs(playerBeh.spinY+playerBeh.spinX)/4) + Math.abs(ball.position.z)/500;
+    speed.vy = Math.max(0.3, 0.9-(ball.position.y/100));
+    speed.vx = ((-ball.position.x-initX)/50) - playerBeh.spinX/300;
     hitting = false;
-    hitComplete = false;
+    hitComp = false;
 
-    hitPosition.copy(ball.position);
-    hitPosition.z += 10;
-    hitPosition.x += paddleBehaviour.spinx*30;
-    hitPosition.y += paddleBehaviour.spiny*20;
-    hitPosition.y += 3;
-
-    lastHit = time;
-
+    hitPos.copy(ball.position);
+    hitPos.z += 10;
+    hitPos.x += playerBeh.spinX*30;
+    hitPos.y += playerBeh.spinY*20;
+    hitPos.y += 3;
+    lastHit = t;
     //var rnd = Math.floor( Math.random()*6 );
-    //Sound.playStaticSound(Sound["paddle"+rnd],0.6+Math.random()*0.4);
+    //Sound.playStaticSound(Sound["player"+rnd],0.6+Math.random()*0.4);
   }
 
-  if (distance < 150 && dify < 6 && paddle.position.z < ball.position.z && time > lastHit+500 && !hitting) {
-
+  if (distance<150 && diffY<6 && player.position.z<ball.position.z && t>lastHit+500 && !hitting) {
     hitting = true;
     hitTable = false;
-
-    initX = paddle.position.x;
-    hitX = mouseX;
-    hitY = mouseY;
-
-    initHit = time;
+    initX = player.position.x;
+    hit.x = mousx;
+    hit.y = mousy;
+    initHit = t;
   }
 
-
-  // find intersections
+  // 마우스로부터 광선을 쏴서 위치 값 구하기
   var raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(mouse, camera);
-
-  var intersect = raycaster.intersectObject( hitMesh );
-  //console.log(intersect);
-
+  var intersect = raycaster.intersectObject( hitMes );
   if ( intersect.length > 0 && !hitting) {
-      paddleTarget = intersect[0].point;
-
-      if (paddleTarget.y > 48) {
-        paddleTarget.y = 48;
+      playerTarg = intersect[0].point;
+      if (playerTarg.y > 48) {
+        playerTarg.y = 48;
       }
   }
 
   if (hitting) {
-    paddleTarget = ball.position;
+    playerTarg = ball.position;
   }
 
-  if (!hitComplete) {
-    if (ball.position.z < paddle.position.z+(ballRadius*6)) {
-      ball.position.z = paddle.position.z+(ballRadius*6)
+  if (!hitComp) {
+    if (ball.position.z < player.position.z+(ballRad*6)) {
+      ball.position.z = player.position.z+(ballRad*6)
     }
-    paddleTarget = hitPosition;
+    playerTarg = hitPos;
   }
 
-  if (time > lastHit+150 && !hitComplete) {
-    hitComplete = true;
-    paddleBehaviour.divider = 30;
-    var divideTween = new TWEEN.Tween(paddleBehaviour)
-      .to({divider: 3}, 300)
+  if (t > lastHit+150 && !hitComp) {
+    hitComp = true;
+    playerBeh.div = 30;
+    var divTween = new TWEEN.Tween(playerBeh)
+      .to({div: 4}, 300)
       .easing(TWEEN.Easing.Quadratic.EaseOut);
-    divideTween.start();
+    divTween.start();
   }
 
-  if (paddleChild) {
-    paddle.position.x += (paddleTarget.x - paddle.position.x)/paddleBehaviour.divider;
-    paddle.position.y += (paddleTarget.y - paddle.position.y)/paddleBehaviour.divider;
-    paddle.position.z += (paddleTarget.z - paddle.position.z)/paddleBehaviour.divider;
-
-    // if (paddle.position.x < 0) {
-    // 	paddleChild.rotation.z = -paddle.position.x/15;
-    // } else {
-    // 	paddleChild.rotation.z = paddle.position.x/15;
-    // }
-
+  if (playerChild) {
+    player.position.x += (playerTarg.x - player.position.x)/playerBeh.div;
+    player.position.y += (playerTarg.y - player.position.y)/playerBeh.div;
+    player.position.z += (playerTarg.z - player.position.z)/playerBeh.div;
     var amount = 1;
     if (distance < 2000) {
       amount = distance/2000;
     }
-
-    //paddleChild.rotation.x = ( -paddle.position.x/30 )*amount;
-    paddle.rotation.y = ( Math.PI/2+paddle.position.x/3 );
-
-    if (paddle.rotation.y < 0) {
-      paddle.rotation.y = 0;
+    player.rotation.y = (Math.PI/2+player.position.x/3);
+    if (player.rotation.y < 0) {
+      player.rotation.y = 0;
     }
-    if (paddle.rotation.y > Math.PI) {
-      paddle.rotation.y = Math.PI;
+    if (player.rotation.y > Math.PI) {
+      player.rotation.y = Math.PI;
     }
-
-    if (paddle.rotation.y > 0 && paddle.rotation.y < Math.PI && hitting) {
-      if (paddle.position.x < 0) {
-        paddle.rotation.y = ( Math.PI/2+paddle.position.x/3 )*amount;
+    if (player.rotation.y > 0 && player.rotation.y < Math.PI && hitting) {
+      if (player.position.x < 0) {
+        player.rotation.y = ( Math.PI/2+player.position.x/3 )*amount;
       } else {
-        paddle.rotation.y = ( Math.PI/2-paddle.position.x/3 )*amount;
+        player.rotation.y = ( Math.PI/2-player.position.x/3 )*amount;
       }
-
     }
-
-    hitMesh.position.z += (-60 - (mouseYpercent*50) - hitMesh.position.z)/2;
-
-    if (hitMesh.position.z < -80) {
-      hitMesh.position.z = -80;
+    hitMes.position.z += (-60 - (mousyPer*50) - hitMes.position.z)/2;
+    if (hitMes.position.z < -80) {
+      hitMes.position.z = -80;
     }
-    if (hitMesh.position.z > -40) {
-      hitMesh.position.z = -40;
+    if (hitMes.position.z > -40) {
+      hitMes.position.z = -40;
     }
-
   }
-
-  // camera
-  // camera.position.y += (55+-mouseYpercent*10 - camera.position.y)/10;
-  // camera.position.x += (-mouseXpercent*25 - camera.position.x)/10;
-
-  // ball
-  vy -= gravity;
-
-  // spin
-  if (paddleBehaviour.spinx > 0) {
-    var rm = paddleBehaviour.spinx/15;
-    ballBehaviour.spinx -= rm;
-    if (ballBehaviour.spinx < -paddleBehaviour.spinx) {
-      ballBehaviour.spinx = -paddleBehaviour.spinx;
+  // 공 중력 작용
+  speed.vy -= gravity;
+  // 스핀
+  if (playerBeh.spinX > 0) {
+    var rm = playerBeh.spinX/15;
+    ballBeh.spinX -= rm;
+    if (ballBeh.spinX < -playerBeh.spinX) {
+      ballBeh.spinX = -playerBeh.spinX;
     }
   } else {
-    var rm = paddleBehaviour.spinx/15;
-    ballBehaviour.spinx -= rm;
-    if (ballBehaviour.spinx > Math.abs(paddleBehaviour.spinx)) {
-      ballBehaviour.spinx = Math.abs(paddleBehaviour.spinx);
+    var rm = playerBeh.spinX/15;
+    ballBeh.spinX -= rm;
+    if (ballBeh.spinX > Math.abs(playerBeh.spinX)) {
+      ballBeh.spinX = Math.abs(playerBeh.spinX);
     }
   }
 
-  ball.position.x += vx+ballBehaviour.spinx;
-  ball.position.y += vy;
-  ball.position.z += vz;
+  ball.position.x += speed.vx+ballBeh.spinX;
+  ball.position.y += speed.vy;
+  ball.position.z += speed.vz;
 
-  // temp opponent hit
+  // 로봇이 공을 칠때
   if (ball.position.z > bound.top+12 && ball.position.x < bound.left+20 && ball.position.x > bound.right-20 && ball.position.y > bound.table+2) {
-    //ball.position.z = bound.top;
-    ballBehaviour.spinx *= 0.5;
-    paddleBehaviour.spinx *= 0.5;
-
+    ballBeh.spinX *= 0.5;
+    playerBeh.spinX *= 0.5;
     hitTable=false;
-
-    vz = -(2.3+Math.random()*0.3);
-    vy = 0.35+Math.random()*0.2;
-    vx = ( -ball.position.x/80 + Math.random()*0.7-0.35 ) - ballBehaviour.spinx*Math.random();
-    hitTimeAI = time;
-    paddleTargetAI.copy(ball.position);
-    paddleTargetAI.z -= 20+Math.random()*20;
-    paddleTargetAI.y += 4+Math.random()*4;
-
+    speed.vz = -(2.3+Math.random()*0.3);
+    speed.vy = 0.35+Math.random()*0.2;
+    speed.vx = ( -ball.position.x/80 + Math.random()*0.7-0.35 ) - ballBeh.spinX*Math.random();
+    hitTimeRobot = t;
+    playerTargRobot.copy(ball.position);
+    playerTargRobot.z -= 20+Math.random()*20;
+    playerTargRobot.y += 4+Math.random()*4;
     if (ball.position.x < 0) {
-      paddleTargetAI.x -= 4+Math.random()*4;
+      playerTargRobot.x -= 4+Math.random()*4;
     } else {
-      paddleTargetAI.x += 4+Math.random()*4;
+      playerTargRobot.x += 4+Math.random()*4;
     }
-
     // var rnd = Math.floor( Math.random()*6 );
-    // Sound.playStaticSound(Sound["paddle"+rnd],0.2+Math.random()*0.3);
-
+    // Sound.playStaticSound(Sound["player"+rnd],0.2+Math.random()*0.3);
   }
 
-  // hit on table
-  if (ball.position.y <= bound.table && ball.position.x <= bound.left+ballRadius && ball.position.x >= bound.right-ballRadius && ball.position.z >= bound.bottom-ballRadius && ball.position.z <= bound.top+ballRadius) {
-
+  // 탁구대와 충돌할 떄
+  if (ball.position.y <= bound.table && ball.position.x <= bound.left+ballRad && ball.position.x >= bound.right-ballRad && ball.position.z >= bound.bottom-ballRad && ball.position.z <= bound.top+ballRad) {
     var overlap = 0;
-    var timeDif = time - lastTableHit;
+    var timeDiff = t - lastTableHit;
     var startFriction = 0.98;
-    if (timeDif < 800) startFriction = timeDif/800;
+    if (timeDiff < 800) startFriction = timeDiff/800;
     var friction = Math.max(startFriction, 0.75);
-
-    lastTableHit = time;
+    lastTableHit = t;
     hitTable=true;
-
-    // check for edge balls
-    if (Math.abs(vy) > 0.25) {
-      // left
-      if (ball.position.x > bound.left && ball.position.x <= bound.left+ballRadius) {
-        overlap = Math.abs(ball.position.x - bound.left)/ballRadius;
-        //console.log("left edge ball", overlap);
-        vx += overlap;
+    // 에지 볼 체크
+    if (Math.abs(speed.vy) > 0.25) {
+      // 왼쪽
+      if (ball.position.x > bound.left && ball.position.x <= bound.left+ballRad) {
+        overlap = Math.abs(ball.position.x - bound.left)/ballRad;
+        speed.vx += overlap;
       }
-      // right
-      if (ball.position.x < bound.right && ball.position.x >= bound.right-ballRadius) {
-        overlap = Math.abs(ball.position.x - bound.right)/ballRadius;
-        //console.log("right edge ball", overlap);
-        vx -= overlap;
+      // 오른쪽
+      if (ball.position.x < bound.right && ball.position.x >= bound.right-ballRad) {
+        overlap = Math.abs(ball.position.x - bound.right)/ballRad;
+        speed.vx -= overlap;
       }
 
-      // top
-      if (ball.position.z > bound.top && ball.position.z <= bound.top+ballRadius) {
-        overlap = Math.abs(ball.position.z - bound.top)/ballRadius;
-        //console.log("top edge ball", overlap);
-        vz += overlap;
+      // 위
+      if (ball.position.z > bound.top && ball.position.z <= bound.top+ballRad) {
+        overlap = Math.abs(ball.position.z - bound.top)/ballRad;
+        speed.vz += overlap;
       }
 
-      // bottom
-      if (ball.position.z < bound.bottom && ball.position.z >= bound.bottom-ballRadius) {
-        overlap = Math.abs(ball.position.z - bound.bottom)/ballRadius;
-        //console.log("bottom edge ball", overlap);
-        vz -= overlap;
+      // 아래
+      if (ball.position.z < bound.bottom && ball.position.z >= bound.bottom-ballRad) {
+        overlap = Math.abs(ball.position.z - bound.bottom)/ballRad;
+        speed.vz -= overlap;
       }
     }
-
     ball.position.y = bound.table;
-    vy *= -friction+overlap;
-    vx *= Math.max(startFriction,0.5);
-    vz *= Math.max(startFriction,0.5);
-
-    ballBehaviour.spinx *= Math.max(startFriction,0.7);
-    paddleBehaviour.spinx *= Math.max(startFriction,0.7);
-
-    if (Math.abs(vy) < 0.025) {
+    speed.vy *= -friction+overlap;
+    speed.vx *= Math.max(startFriction,0.5);
+    speed.vz *= Math.max(startFriction,0.5);
+    ballBeh.spinX *= Math.max(startFriction,0.7);
+    playerBeh.spinX *= Math.max(startFriction,0.7);
+    if (Math.abs(speed.vy) < 0.025) {
       ballInactive = true;
     }
-
     // if (Math.abs(vy) > 0.025) {
     // 	var rnd = Math.floor( Math.random()*6 );
     // 	var volume = (1*Math.max(startFriction,0.4))-(ball.position.z-bound.bottom)/(bound.top*3);
@@ -583,41 +489,37 @@ function loop() {
     // }
   }
 
-  // hit net
-  if (ball.position.z > -(ballRadius+Math.abs(vz)) && ball.position.z < (ballRadius+Math.abs(vz))) {
-    if (ball.position.y < bound.net+ballRadius && ball.position.x < bound.netleft+ballRadius && ball.position.x > bound.netright-ballRadius) {
+  // 네트와 충돌
+  if (ball.position.z > -(ballRad+Math.abs(speed.vz)) && ball.position.z < (ballRad+Math.abs(speed.vz))) {
+    if (ball.position.y < bound.net+ballRad && ball.position.x < bound.netleft+ballRad && ball.position.x > bound.netright-ballRad) {
       var overlap = 0;
       if (ball.position.y > bound.net) {
-        overlap = Math.abs(ball.position.y - bound.net)/ballRadius;
+        overlap = Math.abs(ball.position.y - bound.net)/ballRad;
       }
-
       if (overlap == 0) {
-        if (vz > 0) ball.position.z = -ballRadius;
-        if (vz < 0) ball.position.z = ballRadius;
-
-        vz *= -0.1;
-        vy *= 0.25;
-        vx *= 0.25;
-        ballBehaviour.spinx *= 0.25;
-        paddleBehaviour.spinx *= 0.25;
-
+        if (speed.vz > 0) ball.position.z = -ballRad;
+        if (speed.vz < 0) ball.position.z = ballRad;
+        speed.vz *= -0.1;
+        speed.vy *= 0.25;
+        speed.vx *= 0.25;
+        ballBeh.spinX *= 0.25;
+        playerBeh.spinX *= 0.25;
       } else {
-        //console.log("net roller", overlap);
-        vz *= 0.8-(overlap*0.5);
-        vy += 1-overlap;
-        vx *= 0.8-(overlap*0.5);
-        ballBehaviour.spinx *= 0.8-(overlap*0.5);
-        paddleBehaviour.spinx *= 0.8-(overlap*0.5);
+        speed.vz *= 0.8-(overlap*0.5);
+        speed.vy += 1-overlap;
+        speed.vx *= 0.8-(overlap*0.5);
+        ballBeh.spinX *= 0.8-(overlap*0.5);
+        playerBeh.spinX *= 0.8-(overlap*0.5);
       }
     }
   }
 
-  // hit on floor
+  // 바닥과 충돌
   if (ball.position.y < bound.floor) {
     ball.position.y = bound.floor;
-    vy *= -0.7;
-    vx *= 0.6;
-    vz *= 0.6;
+    speed.vy *= -0.7;
+    speed.vx *= 0.6;
+    speed.vz *= 0.6;
     ballInactive = true;
     // if (Math.abs(vy) > 0.025) {
     // 	var rnd = Math.floor( Math.random()*2 );
@@ -626,93 +528,48 @@ function loop() {
     // 	Sound.playStaticSound(Sound["floor"+rnd],volume + Math.random()*0.1);
     // }
   }
-
-  ball.rotation.x += vx/5;
-  ball.rotation.y += vy/5;
-  ball.rotation.z += vz/5;
-
+  ball.rotation.x += speed.vx/5;
+  ball.rotation.y += speed.vy/5;
+  ball.rotation.z += speed.vz/5;
   var size = (ball.position.y - 34)/20;
 
-  // ball shadow
-  shadow.position.x = ball.position.x-(5*size);
-  shadow.position.z = ball.position.z-(5*size);
-
-  shadowMaterial.opacity = 0.5-(size/2);
-
-  shadow.scale.set(1+size,1+size,1+size)
-
-  shadowMaterial.visible = true;
-
-  if (shadow.position.z < bound.bottom) {
-    shadowMaterial.visible = false;
-  }
-  if (shadow.position.z > bound.top) {
-    shadowMaterial.visible = false;
-  }
-  if (shadow.position.x < bound.right) {
-    shadowMaterial.visible = false;
-  }
-  if (shadow.position.x > bound.left) {
-    shadowMaterial.visible = false;
-  }
-  if (ball.position.y < bound.table) {
-    shadowMaterial.visible = false;
-  }
-
-  // AI paddle
-  if (paddleChildAI) {
-    var divider = 6;
-    if (time > hitTimeAI+500) {
+  // 로봇 플레이어
+  if (playerRobotChild) {
+    var div = 6;
+    if (t > hitTimeRobot+500) {
       if (ball.position.z >= 0 && !ballInactive) {
-        paddleTargetAI.copy(ball.position);
-        divider = 3;
+        playerTargRobot.copy(ball.position);
+        div = 3;
       } else {
-        paddleTargetAI.x = ball.position.x/2;
-        if (ballInactive) paddleTargetAI.x = 6 + Math.sin(time/1000)*5;
-        paddleTargetAI.y = 40 - Math.cos(time/1000)*2;
-        divider = 15;
+        playerTargRobot.x = ball.position.x/2;
+        if (ballInactive) playerTargRobot.x = 6 + Math.sin(t/1000)*5;
+        playerTargRobot.y = 40 - Math.cos(t/1000)*2;
+        div = 15;
       }
-      paddleTargetAI.z = bound.top+15;
+      playerTargRobot.z = bound.top+15;
     }
-
-
-    if (paddleTargetAI.y < bound.table+5) {
-      paddleTargetAI.y = bound.table+5;
+    if (playerTargRobot.y < bound.table+5) {
+      playerTargRobot.y = bound.table+5;
     }
+    playerRobot.position.x += (playerTargRobot.x - playerRobot.position.x)/div;
+    playerRobot.position.y += (playerTargRobot.y - playerRobot.position.y)/div;
+    playerRobot.position.z += (playerTargRobot.z - playerRobot.position.z)/div;
 
-    paddleAI.position.x += (paddleTargetAI.x - paddleAI.position.x)/divider;
-    paddleAI.position.y += (paddleTargetAI.y - paddleAI.position.y)/divider;
-    paddleAI.position.z += (paddleTargetAI.z - paddleAI.position.z)/divider;
-
-
-    if (time < hitTimeAI+500) {
-      if (ball.position.z > paddleAI.position.z-ballRadius) {
-        ball.position.z = paddleAI.position.z-ballRadius;
+    if (t < hitTimeRobot+500) {
+      if (ball.position.z > playerRobot.position.z-ballRad) {
+        ball.position.z = playerRobot.position.z-ballRad;
       }
     }
-
-    // if (paddleAI.position.x < 0) {
-    // 	paddleChildAI.rotation.z = -paddleAI.position.x/15;
-    // } else {
-    // 	paddleChildAI.rotation.z = paddleAI.position.x/15;
-    // }
-
-    //paddleChildAI.rotation.x = ( -paddleAI.position.x/30 )//*amount;
-    paddleAI.rotation.y = ( Math.PI/2+paddleAI.position.x/3 );
-
-    if (paddleAI.rotation.y < 0) {
-      paddleAI.rotation.y = 0;
+    playerRobot.rotation.y = ( Math.PI/2+playerRobot.position.x/3 );
+    if (playerRobot.rotation.y < 0) {
+      playerRobot.rotation.y = 0;
     }
-    if (paddleAI.rotation.y > Math.PI) {
-      paddleAI.rotation.y = Math.PI;
+    if (playerRobot.rotation.y > Math.PI) {
+      playerRobot.rotation.y = Math.PI;
     }
-
   }
-
-  camera.lookAt(cameraTarget);
-
+  camera.lookAt(camTarg);
   TWEEN.update();
-
   webGLRenderer.render( scene, camera );
 }
 

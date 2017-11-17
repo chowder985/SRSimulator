@@ -432,7 +432,7 @@
       }
 
       document.getElementById("clickArea").addEventListener("click", function(){
-        if(Number(localStorage.getItem("realDatingData"))-Number(localStorage.getItem("datingData")) <= 0){
+        if(Number(localStorage.getItem("realDatingData"))+sendDatingData <= 0){
           window.location.href = "badEnding(Dating).html";
         }
         if(scene===4 || scene===6 || scene===34){

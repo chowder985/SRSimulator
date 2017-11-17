@@ -149,6 +149,7 @@
   <script type="text/javascript">
     var scene = 1;
     var sendDatingData=0;
+    console.log(localStorage.getItem("realDatingData"));
 
     function first(){
       sendDatingData += -48;
@@ -247,6 +248,10 @@
     }
 
     document.getElementById("clickArea").addEventListener("click", function(){
+      //console.log(Number(localStorage.getItem("realDatingData"))+sendDatingData)
+      if(Number(localStorage.getItem("realDatingData"))+sendDatingData <= 0){
+        window.location.href = "badEnding(Dating).html";
+      }
       if(scene===12 || scene===14){
         console.log(scene);
         $("#clickArea").attr("disabled", true);
@@ -276,6 +281,5 @@
           window.location.href = "home.html";
         }
     });
-
   </script>
 </html>
