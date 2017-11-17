@@ -323,8 +323,6 @@ function render() {
     hitPos.y += playerBeh.spinY*20;
     hitPos.y += 3;
     lastHit = t;
-    //var rnd = Math.floor( Math.random()*6 );
-    //Sound.playStaticSound(Sound["player"+rnd],0.6+Math.random()*0.4);
   }
 
   if (distance<150 && diffY<6 && player.position.z<ball.position.z && t>lastHit+500 && !hitting) {
@@ -435,8 +433,6 @@ function render() {
     } else {
       playerTargRobot.x += 4+Math.random()*4;
     }
-    // var rnd = Math.floor( Math.random()*6 );
-    // Sound.playStaticSound(Sound["player"+rnd],0.2+Math.random()*0.3);
   }
 
   // 탁구대와 충돌할 떄
@@ -482,11 +478,6 @@ function render() {
     if (Math.abs(speed.vy) < 0.025) {
       ballInactive = true;
     }
-    // if (Math.abs(vy) > 0.025) {
-    // 	var rnd = Math.floor( Math.random()*6 );
-    // 	var volume = (1*Math.max(startFriction,0.4))-(ball.position.z-bound.bottom)/(bound.top*3);
-    // 	Sound.playStaticSound(Sound["table"+rnd],volume + Math.random()*0.2);
-    // }
   }
 
   // 네트와 충돌
@@ -521,12 +512,6 @@ function render() {
     speed.vx *= 0.6;
     speed.vz *= 0.6;
     ballInactive = true;
-    // if (Math.abs(vy) > 0.025) {
-    // 	var rnd = Math.floor( Math.random()*2 );
-    // 	var volume = Math.max(1-(distance/80000), 0.1)*0.3;
-    //
-    // 	Sound.playStaticSound(Sound["floor"+rnd],volume + Math.random()*0.1);
-    // }
   }
   ball.rotation.x += speed.vx/5;
   ball.rotation.y += speed.vy/5;
