@@ -118,6 +118,8 @@ var onlyOnce=0;
 
 var clickPoint;
 
+var gameAudio = document.getElementById("audio");
+
 // var disX=null, disZ=null;
 var cnt=1;
 document.addEventListener('contextmenu', onMouseClick, false);
@@ -137,6 +139,7 @@ $("#logout-btn").click(function(){
 });
 
 function init(){
+  gameAudio.play();
   // 시간 개념
   // 새로 고침 했을 시 바로 업데이트
   state.hours = Number(localStorage.getItem("hours"));
@@ -859,6 +862,23 @@ function render(){
         if((state.hours/12) >= 1){
           state.hours = 0;
           state.day++;
+          $(".sleep").fadeIn("slow", function(){
+            setTimeout(function(){
+              $(".sleep").fadeOut("slow", function(){
+                try{
+                  player.position.set(-20, 4, 0);
+                  playerColl.position.set(-20, 4, 0);
+                  fullPlayer.position.set(-20, 4, 0);
+                  clickedPos.set(-20, 4, 0);
+                  localStorage.setItem("playerX", player.position.x);
+                  localStorage.setItem("playerY", player.position.y);
+                  localStorage.setItem("playerZ", player.position.z);
+                }catch(e){
+
+                }
+              });
+            }, 1000);
+          });
         }
         localStorage.setItem("hours", state.hours);
         localStorage.setItem("day", state.day);
