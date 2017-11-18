@@ -6,7 +6,7 @@ var action;
 var actionStop = false;
 
 var state = {
-  day: 1,
+  day: 0,
   hours: 0,
   statBarData: {
     happiness: 80,
