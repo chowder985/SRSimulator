@@ -157,23 +157,12 @@ function init(){
     $(".sleep").fadeIn("slow", function(){
       setTimeout(function(){
         $(".sleep").fadeOut("slow", function(){
-          try{
-            player.position.set(-20, 4, 0);
-            playerColl.position.set(-20, 4, 0);
-            fullPlayer.position.set(-20, 4, 0);
-            clickedPos.set(-20, 4, 0);
-            localStorage.setItem("playerX", player.position.x);
-            localStorage.setItem("playerY", player.position.y);
-            localStorage.setItem("playerZ", player.position.z);
-          }catch(e){
-
-          }
         });
       }, 1000);
     });
     state.hours=0;
     localStorage.setItem("hours", state.hours);
-    window.location.href = "home.html";
+    // window.location.href = "home.html";
   }
   document.querySelector(".Hour").textContent = state.hours+":00";
   document.querySelector("#dateText").textContent="Day "+(state.day+1);
@@ -199,23 +188,12 @@ function init(){
       $(".sleep").fadeIn("slow", function(){
         setTimeout(function(){
           $(".sleep").fadeOut("slow", function(){
-            try{
-              player.position.set(-20, 4, 0);
-              playerColl.position.set(-20, 4, 0);
-              fullPlayer.position.set(-20, 4, 0);
-              clickedPos.set(-20, 4, 0);
-              localStorage.setItem("playerX", player.position.x);
-              localStorage.setItem("playerY", player.position.y);
-              localStorage.setItem("playerZ", player.position.z);
-            }catch(e){
-
-            }
           });
         }, 1000);
       });
       state.hours=0;
       localStorage.setItem("hours", state.hours);
-      window.location.href="home.html";
+      // window.location.href="home.html";
     }
     document.querySelector(".Hour").textContent = state.hours+":00";
     document.querySelector("#dateText").textContent="Day "+(state.day+1);
@@ -854,9 +832,7 @@ function render(){
 
         var sendHappinessData = 16;
         // 서버
-        state.statBarData.happiness+=sendHappinessData;
-        $(".Happiness>.gage").css({"width": state.statBarData.happiness+"px"});
-        localStorage.setItem("happinessData", sendHappinessData);
+        localStorage.setItem("happinessData", Number(localStorage.getItem("happinessData"))+sendHappinessData);
 
         state.hours+=2;
         if((state.hours/12) >= 1){

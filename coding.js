@@ -62,7 +62,7 @@ function onEnter(e){
         sendCodingData=-16;
       }
       // 서버에 sendCodingData값 전송 후 Coding 데이터에 값 추가하기
-      localStorage.setItem("codingData", sendCodingData);
+      localStorage.setItem("codingData", Number(localStorage.getItem("codingData"))+sendCodingData);
 
       // 탁구 소요시간 3시간 추가
       state.hours+=3;

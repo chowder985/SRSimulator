@@ -276,7 +276,7 @@ function render() {
         }else{
           sendHealthData+=5;
         }
-        localStorage.setItem("healthData", sendHealthData);
+        localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+sendHealthData);
 
         window.location.href = "home.html";
       }
@@ -285,7 +285,7 @@ function render() {
         document.getElementById("message").textContent = "You Lose"
         var sendHealthData=-16;
         // 서버로 sendHealthData를 주고 서버에서 Health 데이터에 값 추가하기
-        localStorage.setItem("healthData", sendHealthData);
+        localStorage.setItem("healthData", Number(localStorage.getItem("healthData"))+sendHealthData);
 
         window.location.href = "home.html";
       }
