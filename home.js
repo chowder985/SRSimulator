@@ -800,13 +800,22 @@ function render(){
         state.hours+=4;
         if((state.hours/12) > 1){
           state.hours = 12;
+          player.position.set(-20, 4, 0);
+          playerColl.position.set(-20, 4, 0);
+          fullPlayer.position.set(-20, 4, 0);
+          clickedPos.set(-20, 4, 0);
+          localStorage.setItem("playerX", player.position.x);
+          localStorage.setItem("playerY", player.position.y);
+          localStorage.setItem("playerZ", player.position.z);
+        }else{
+        	localStorage.setItem("playerX", playerPos.x);
+        	localStorage.setItem("playerY", playerPos.y);
+        	localStorage.setItem("playerZ", playerPos.z);
         }
         localStorage.setItem("hours", state.hours);
         // document.querySelector(".Hour").textContent = hours+":00";
         // document.querySelector("#dateText").textContent="Day "+(day+1);
-        localStorage.setItem("playerX", playerPos.x);
-        localStorage.setItem("playerY", playerPos.y);
-        localStorage.setItem("playerZ", playerPos.z);
+
         window.location.href = "tableTennis.html";
     }else if(playerPos.distanceTo(tableTennis.position) >= 80){
       firstVisitTennis = true;
@@ -833,6 +842,8 @@ function render(){
         var sendHappinessData = 16;
         // 서버
         localStorage.setItem("happinessData", Number(localStorage.getItem("happinessData"))+sendHappinessData);
+        state.statBarData.happiness += sendHappinessData;
+        $(".Happiness>.gage").css({"width": state.statBarData.happiness+"px"});
 
         state.hours+=2;
         if((state.hours/12) >= 1){
