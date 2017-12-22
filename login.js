@@ -19,7 +19,6 @@ var HEIGHT = 400;
 var mouseX=0, mouseY=0;
 var camera;
 var loader = new THREE.FontLoader();
-var stats = initStats();
 var renderer;
 var scene;
 var directionalLight;
@@ -74,7 +73,6 @@ function init(){
 }
 
 function render() {
-    stats.update();
 
     camera.position.x += ( mouseX - camera.position.x ) * 0.05;
     camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
@@ -83,21 +81,6 @@ function render() {
 
     requestAnimationFrame(render);
     renderer.render(scene, camera);
-}
-
-function initStats() {
-    var stats = new Stats();
-
-    stats.setMode(0); // 0: fps, 1: ms
-
-    // Align top-left
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.left = '0px';
-    stats.domElement.style.top = '0px';
-
-    document.getElementById("Stats-output").appendChild(stats.domElement);
-
-    return stats;
 }
 
 function onWindowResize() {
